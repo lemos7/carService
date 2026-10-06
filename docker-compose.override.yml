@@ -1,0 +1,19 @@
+# Loaded automatically by `docker compose up` for safe local development.
+# Explicit production commands (-f base -f production) do not load this file.
+services:
+  identity-api:
+    extends:
+      file: docker-compose.development.yml
+      service: identity-api
+  vehicles-api:
+    extends:
+      file: docker-compose.development.yml
+      service: vehicles-api
+  maintenance-api:
+    extends:
+      file: docker-compose.development.yml
+      service: maintenance-api
+  web:
+    extends:
+      file: docker-compose.development.yml
+      service: web

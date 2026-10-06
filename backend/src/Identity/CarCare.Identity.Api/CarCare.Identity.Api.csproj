@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../CarCare.Identity.Application/CarCare.Identity.Application.csproj" />
+    <ProjectReference Include="../CarCare.Identity.Persistence/CarCare.Identity.Persistence.csproj" />
+  </ItemGroup>
+</Project>

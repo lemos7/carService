@@ -1,0 +1,16 @@
+**/bin
+**/obj
+.vs
+**/data
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/wwwroot/uploads
+**/documents
+**/.env
+**/.env.*
+**/secrets
+**/*.pem
+**/*.pfx
+**/*.key
+**/certs

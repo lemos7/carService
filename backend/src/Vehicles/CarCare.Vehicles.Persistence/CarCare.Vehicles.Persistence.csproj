@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../Shared/CarCare.Security/CarCare.Security.csproj" />
+    <ProjectReference Include="../CarCare.Vehicles.Application/CarCare.Vehicles.Application.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+</Project>

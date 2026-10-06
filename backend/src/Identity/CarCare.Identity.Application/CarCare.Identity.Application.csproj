@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../CarCare.Identity.Domain/CarCare.Identity.Domain.csproj" />
+  </ItemGroup>
+</Project>

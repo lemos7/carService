@@ -1,0 +1,14 @@
+.back-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.back-link:hover {
+  background: #fff;
+}

@@ -1,0 +1,101 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.cost-card {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px #00000012;
+}
+h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+h3 {
+  margin-top: 1.5rem;
+  font-weight: 700;
+}
+p {
+  margin-top: 0.5rem;
+  color: #4b5563;
+}
+.period {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+label {
+  flex: 1;
+  min-width: 130px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+input {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #9ca3af;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  background: white;
+}
+.metric {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+}
+.notice {
+  background: #fffbeb;
+  padding: 0.75rem;
+  color: #92400e;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+.error {
+  color: #b91c1c;
+}
+.empty {
+  padding: 1.5rem 0;
+}
+.chart-scroll {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+svg {
+  display: block;
+  min-width: 100%;
+}
+rect {
+  fill: #0f766e;
+}
+line {
+  stroke: #9ca3af;
+}
+text {
+  text-anchor: middle;
+  font-size: 12px;
+  fill: #374151;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+caption {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+}
+th,
+td {
+  text-align: left;
+  padding: 0.6rem 0.25rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+td {
+  text-align: right;
+}

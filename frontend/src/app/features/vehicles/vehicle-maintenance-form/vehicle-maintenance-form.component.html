@@ -1,0 +1,120 @@
+<section>
+  <button
+    type="button"
+    (click)="goBack()"
+    class="back-link"
+    aria-label="Voltar para a página anterior"
+  >
+    <span aria-hidden="true">←</span>
+    Voltar
+  </button>
+
+  <div class="mt-4">
+    <h1 class="text-2xl font-bold">Registrar manutenção</h1>
+    <p *ngIf="vehicle" class="mt-1 text-gray-600">
+      {{ vehicle.model }} · {{ vehicle.licensePlate }}
+    </p>
+  </div>
+
+  <app-alert
+    *ngIf="message"
+    class="mt-4 block"
+    [type]="error ? 'error' : 'success'"
+    [title]="error ? 'Erro' : 'Concluído'"
+  >
+    {{ message }}
+  </app-alert>
+
+  <form
+    *ngIf="vehicle"
+    [formGroup]="form"
+    (ngSubmit)="save()"
+    class="mt-5 rounded-xl bg-white p-5 shadow-sm"
+  >
+    <div class="grid gap-4 sm:grid-cols-2">
+      <app-input
+        label="Data da manutenção"
+        inputType="date"
+        [required]="true"
+        formControlName="serviceDate"
+      />
+      <label class="block text-sm font-medium">
+        Valor total dos serviços (R$) *
+        <input
+          type="number"
+          min="0"
+          max="999999999.99"
+          step="0.01"
+          required
+          formControlName="totalCost"
+          class="mt-1 block w-full rounded-lg border border-gray-400 p-2.5"
+        />
+      </label>
+      <label class="block text-sm font-medium">
+        Categoria *
+        <select
+          required
+          formControlName="category"
+          class="mt-1 block w-full rounded-lg border border-gray-400 p-2.5"
+        >
+          <option value="">Selecione</option>
+          <option>Preventiva</option>
+          <option>Corretiva</option>
+          <option>Pneus</option>
+          <option>Óleo e filtros</option>
+          <option>Outros</option>
+        </select>
+      </label>
+      <app-input
+        label="Quilometragem atual"
+        inputType="number"
+        [required]="true"
+        formControlName="odometerKm"
+      />
+      <label class="block text-sm font-medium">
+        Nota fiscal (PDF) *
+        <input
+          (change)="selectDocument($event)"
+          accept="application/pdf,.pdf"
+          type="file"
+          required
+          [disabled]="form.disabled"
+          class="mt-1 block w-full rounded-lg border border-gray-400 bg-white p-2.5 disabled:bg-gray-100"
+        />
+        <span class="mt-1 block text-xs text-gray-500">Arquivo PDF de até 10 MB.</span>
+      </label>
+    </div>
+
+    <label class="mt-4 block">
+      <span class="mb-1.5 block text-sm font-medium">Detalhes do serviço prestado *</span>
+      <textarea
+        formControlName="details"
+        rows="6"
+        maxlength="4000"
+        required
+        class="w-full rounded-lg border border-gray-400 bg-white p-2.5 focus:border-brand focus:ring-brand disabled:bg-gray-100"
+        placeholder="Descreva os serviços realizados, peças substituídas e outras observações."
+      ></textarea>
+    </label>
+
+    <div class="mt-5 flex flex-wrap gap-2">
+      <app-button *ngIf="!form.disabled" buttonType="submit" [disabled]="saving">
+        {{ saving ? 'Salvando...' : 'Salvar manutenção' }}
+      </app-button>
+      <a
+        *ngIf="form.disabled"
+        [routerLink]="['/veiculos', vehicle.id, 'manutencoes']"
+        class="inline-flex min-h-11 items-center rounded-lg bg-brand px-4 py-2.5 font-semibold"
+      >
+        Ver histórico
+      </a>
+      <button
+        type="button"
+        (click)="goBack()"
+        class="rounded-lg px-4 py-2.5 font-semibold text-gray-700"
+      >
+        {{ form.disabled ? 'Voltar' : 'Cancelar' }}
+      </button>
+    </div>
+  </form>
+</section>

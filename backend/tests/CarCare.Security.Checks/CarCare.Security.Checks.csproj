@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RunWorkingDirectory>$(MSBuildProjectDirectory)/../../..</RunWorkingDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Shared/CarCare.Security/CarCare.Security.csproj" />
+    <ProjectReference Include="../../src/Maintenance/CarCare.Maintenance.Persistence/CarCare.Maintenance.Persistence.csproj" />
+  </ItemGroup>
+</Project>

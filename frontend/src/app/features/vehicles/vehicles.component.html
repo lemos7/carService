@@ -1,0 +1,124 @@
+<section>
+  <div class="flex items-end justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold">Meus veículos</h1>
+      <p class="mt-1 text-gray-600">Cadastre e atualize os dados do seu carro.</p>
+    </div>
+    <button (click)="openForm()" class="rounded-lg bg-brand px-4 py-2.5 font-semibold">
+      Novo veículo
+    </button>
+  </div>
+  <app-alert
+    *ngIf="message"
+    class="mt-4 block"
+    [type]="error ? 'error' : 'success'"
+    [title]="error ? 'Erro' : 'Concluído'"
+  >
+    {{ message }}
+  </app-alert>
+  <form
+    *ngIf="showForm"
+    [formGroup]="form"
+    (ngSubmit)="save()"
+    class="mt-5 rounded-xl bg-white p-5 shadow-sm"
+  >
+    <h2 class="text-lg font-bold">{{ editing ? 'Editar' : 'Cadastrar' }} veículo</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <app-input label="Modelo" [required]="true" formControlName="model" />
+      <app-input label="Ano" inputType="number" [required]="true" formControlName="year" />
+      <app-input label="Placa" [required]="true" formControlName="licensePlate" />
+      <app-input label="Cor" [required]="true" formControlName="color" />
+      <app-input
+        label="Motorização"
+        placeholder="Ex.: 2.0 Flex"
+        [required]="true"
+        formControlName="engine"
+      />
+      <app-input
+        label="Quilometragem"
+        inputType="number"
+        [required]="true"
+        formControlName="odometerKm"
+      />
+    </div>
+    <label class="mt-4 block text-sm font-medium">
+      Foto do carro
+      <input
+        (change)="selectPhoto($event)"
+        accept="image/png,image/jpeg,image/webp"
+        type="file"
+        class="mt-1 block w-full rounded-lg border border-gray-400 bg-white p-2.5"
+      />
+    </label>
+    <div class="mt-5 flex flex-wrap gap-2">
+      <app-button buttonType="submit">Salvar veículo</app-button>
+      <button
+        type="button"
+        (click)="showForm = false"
+        class="rounded-lg px-4 py-2.5 font-semibold text-gray-700"
+      >
+        Cancelar
+      </button>
+    </div>
+  </form>
+  <div class="mt-5 grid gap-4">
+    <article
+      *ngFor="let vehicle of vehicles"
+      class="overflow-hidden rounded-xl bg-white shadow-sm md:flex"
+    >
+      <img
+        *ngIf="vehicle.photoPath"
+        [src]="vehicle.photoPath"
+        [alt]="'Foto de ' + vehicle.model"
+        class="h-48 w-full object-cover md:h-auto md:w-56 lg:w-64"
+      />
+      <div class="flex-1 p-5">
+        <div class="flex justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold">{{ vehicle.model }}</h2>
+            <p class="text-sm text-gray-600">
+              {{ vehicle.year }} · {{ vehicle.licensePlate }} · {{ vehicle.color }}
+            </p>
+          </div>
+          <button (click)="edit(vehicle)" class="text-sm font-semibold underline">Editar</button>
+        </div>
+        <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <dt class="text-gray-600">Motor</dt>
+            <dd class="font-semibold">{{ vehicle.engine }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-600">Quilometragem</dt>
+            <dd class="font-semibold">{{ vehicle.odometerKm | number }} km</dd>
+          </div>
+        </dl>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <a
+            [routerLink]="['/veiculos', vehicle.id]"
+            class="min-h-11 rounded-lg border-2 border-brand px-3 py-2 text-sm font-semibold"
+          >
+            Perfil e custos
+          </a>
+          <button
+            [routerLink]="['/veiculos', vehicle.id, 'manutencoes', 'nova']"
+            class="min-h-11 rounded-lg bg-brand px-3 py-2 text-sm font-semibold"
+          >
+            Manutenção do veículo
+          </button>
+          <button
+            [routerLink]="['/veiculos', vehicle.id, 'manutencoes']"
+            class="min-h-11 rounded-lg border-2 border-brand px-3 py-2 text-sm font-semibold"
+          >
+            Ver manutenções
+          </button>
+        </div>
+      </div>
+    </article>
+    <p
+      *ngIf="!vehicles.length && !showForm"
+      class="rounded-xl bg-white p-5 text-gray-600 shadow-sm"
+    >
+      Você ainda não cadastrou um veículo.
+    </p>
+  </div>
+</section>

@@ -1,0 +1,60 @@
+<div class="min-h-screen bg-stone-100">
+  <header class="border-b border-gray-300 bg-gray-900 text-white">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+      <a routerLink="/" class="text-lg font-bold">
+        <span class="text-brand">Garagem</span>
+        em Dia
+      </a>
+      <div class="flex items-center gap-3">
+        <span class="hidden text-sm text-gray-300 sm:inline">Olá, {{ auth.user()?.name }}</span>
+        <button (click)="logout()" class="rounded-lg px-3 py-2 text-sm hover:bg-gray-800">
+          Sair
+        </button>
+      </div>
+    </div>
+  </header>
+  <div class="mx-auto grid max-w-6xl gap-4 px-4 py-5 md:grid-cols-[220px_1fr]">
+    <nav aria-label="Navegação principal" class="rounded-xl bg-white p-2 shadow-sm">
+      <ul class="grid grid-cols-4 gap-1 md:grid-cols-1">
+        <li>
+          <a
+            routerLink="/"
+            [routerLinkActiveOptions]="{ exact: true }"
+            routerLinkActive="bg-brand text-gray-950"
+            class="block rounded-lg px-2 py-3 text-center text-xs font-medium hover:bg-amber-100 md:px-4 md:text-left md:text-sm"
+          >
+            Início
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/veiculos"
+            routerLinkActive="bg-brand text-gray-950"
+            class="block rounded-lg px-2 py-3 text-center text-xs font-medium hover:bg-amber-100 md:px-4 md:text-left md:text-sm"
+          >
+            Veículos
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/manutencoes"
+            routerLinkActive="bg-brand text-gray-950"
+            class="block rounded-lg px-2 py-3 text-center text-xs font-medium hover:bg-amber-100 md:px-4 md:text-left md:text-sm"
+          >
+            Alertas
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/consumo"
+            routerLinkActive="bg-brand text-gray-950"
+            class="block rounded-lg px-2 py-3 text-center text-xs font-medium hover:bg-amber-100 md:px-4 md:text-left md:text-sm"
+          >
+            Consumo
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <main id="conteudo" tabindex="-1"><router-outlet /></main>
+  </div>
+</div>

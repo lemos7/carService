@@ -1,0 +1,11 @@
+# Test-only override; use with the production profile and an isolated project name.
+services:
+  identity-api:
+    environment:
+      Smtp__Host: smtp.test
+      Smtp__Username: test
+      Smtp__From: test@localhost.test
+      Smtp__PasswordFile: ''
+      Smtp__Password: test-only-not-a-real-credential
+  web:
+    ports: !override ["127.0.0.1:14080:80", "127.0.0.1:14443:443"]

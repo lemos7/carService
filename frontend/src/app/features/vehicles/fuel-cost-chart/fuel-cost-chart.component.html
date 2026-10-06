@@ -1,0 +1,101 @@
+<section class="cost-card" aria-labelledby="fuel-cost-title">
+  <h2 id="fuel-cost-title">Custo por km</h2>
+  <p>
+    Combustível: valor total abastecido ÷ distância registrada. Cada abastecimento é atribuído ao
+    mês da sua data.
+  </p>
+  <div class="period">
+    <label>
+      Mês inicial
+      <input
+        type="month"
+        min="1900-01"
+        max="2199-12"
+        [ngModel]="start()"
+        (ngModelChange)="start.set($event)"
+      />
+    </label>
+    <label>
+      Mês final
+      <input
+        type="month"
+        min="1900-01"
+        max="2199-12"
+        [ngModel]="end()"
+        (ngModelChange)="end.set($event)"
+      />
+    </label>
+  </div>
+  <p *ngIf="!valid()" class="error" role="alert">
+    Selecione um período válido, com o mês final igual ou posterior ao inicial.
+  </p>
+  <ng-container *ngIf="valid()">
+    <p class="metric">
+      {{
+        summary().value !== null ? (summary().value | currency: 'BRL' : 'symbol' : '1.2-3') : '—'
+      }}
+      / km
+    </p>
+    <p *ngIf="summary().omitted" class="notice">
+      {{ summary().omitted }} abastecimento(s) sem data, valor ou distância válida não entram no
+      cálculo. Registros sem data não podem ser atribuídos a um período.
+    </p>
+    <p *ngIf="!summary().count" class="empty">
+      Nenhum abastecimento com custo informado neste período.
+    </p>
+    <ng-container *ngIf="summary().count">
+      <p>{{ summary().cost | currency: 'BRL' }} em combustível · {{ summary().km | number }} km</p>
+      <p>
+        Média: {{ summary().average | number: '1.1-2' }} km/l · Preço médio:
+        {{ summary().price | currency: 'BRL' }} / litro
+      </p>
+      <div class="chart-scroll">
+        <svg
+          [attr.viewBox]="'0 0 ' + (summary().rows.length * 100 + 40) + ' 240'"
+          [attr.width]="summary().rows.length * 100 + 40"
+          height="240"
+          role="img"
+          aria-label="Gráfico mensal do custo de combustível por quilômetro. Valores disponíveis na tabela abaixo."
+        >
+          <line x1="20" y1="195" [attr.x2]="summary().rows.length * 100 + 20" y2="195" />
+          <g *ngFor="let row of summary().rows; let i = index">
+            <rect
+              [attr.x]="i * 100 + 40"
+              [attr.y]="195 - ((row.value ?? 0) / maximum()) * 150"
+              width="50"
+              [attr.height]="((row.value ?? 0) / maximum()) * 150"
+            >
+              <title>
+                {{ row.month }}:
+                {{
+                  row.value !== null
+                    ? (row.value | currency: 'BRL' : 'symbol' : '1.2-3')
+                    : 'Sem dados'
+                }}
+                / km
+              </title>
+            </rect>
+            <text [attr.x]="i * 100 + 65" y="220">{{ row.month }}</text>
+          </g>
+        </svg>
+      </div>
+      <table>
+        <caption>Valores mensais</caption>
+        <thead>
+          <tr>
+            <th scope="col">Mês</th>
+            <th scope="col">Combustível</th>
+            <th scope="col">R$/km</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of summary().rows">
+            <th scope="row">{{ row.month }}</th>
+            <td>{{ row.value !== null ? (row.cost | currency: 'BRL') : 'Sem dados' }}</td>
+            <td>{{ row.value !== null ? (row.value | number: '1.2-3') : '—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+  </ng-container>
+</section>

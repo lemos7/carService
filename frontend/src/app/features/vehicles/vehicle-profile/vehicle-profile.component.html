@@ -1,0 +1,31 @@
+<section>
+  <a routerLink="/veiculos" class="back-link">← Meus veículos</a>
+  <p *ngIf="loading" role="status" class="mt-4">Carregando perfil e custos...</p>
+  <div *ngIf="error" role="alert" class="mt-4 rounded-lg bg-red-50 p-4 text-red-800">
+    {{ error }}
+    <button type="button" (click)="load()" class="underline">Tentar novamente</button>
+  </div>
+  <ng-container *ngIf="!loading && !error && vehicle">
+    <header class="profile-header">
+      <img *ngIf="vehicle.photoPath" [src]="vehicle.photoPath" [alt]="'Foto de ' + vehicle.model" />
+      <div>
+        <h1>{{ vehicle.model }}</h1>
+        <p>
+          {{ vehicle.year }} · {{ vehicle.licensePlate }} · {{ vehicle.color }} ·
+          {{ vehicle.engine }}
+        </p>
+        <p>{{ vehicle.odometerKm | number }} km</p>
+      </div>
+    </header>
+    <nav class="actions" aria-label="Ações do veículo">
+      <a [routerLink]="['/veiculos', vehicle.id, 'manutencoes', 'nova']">Registrar manutenção</a>
+      <a [routerLink]="['/veiculos', vehicle.id, 'manutencoes']">Histórico de manutenções</a>
+      <a routerLink="/consumo">Registrar abastecimento</a>
+    </nav>
+    <h2 class="text-xl font-bold">Controle de custos</h2>
+    <div class="charts">
+      <app-fuel-cost-chart [entries]="fuel" />
+      <app-maintenance-cost-chart [records]="records" />
+    </div>
+  </ng-container>
+</section>

@@ -1,0 +1,6 @@
+{
+  "/api/auth": { "target": "http://localhost:7001", "secure": false },
+  "/api/vehicles": { "target": "http://localhost:7002", "secure": false },
+  "/api/maintenance": { "target": "http://localhost:7003", "secure": false },
+  "/uploads": { "target": "http://localhost:7002", "secure": false }
+}

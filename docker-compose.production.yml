@@ -1,0 +1,20 @@
+services:
+  web:
+    ports: ["80:80", "443:443"]
+    environment:
+      SERVER_NAME: ${SERVER_NAME:?Set SERVER_NAME to the public DNS hostname}
+      NGINX_ENVSUBST_FILTER: ^SERVER_NAME$
+    volumes:
+      - ./deploy/nginx.production.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - type: bind
+        source: ${TLS_CERT_FILE:?Set TLS_CERT_FILE to a trusted full-chain PEM certificate}
+        target: /etc/nginx/tls/fullchain.pem
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${TLS_KEY_FILE:?Set TLS_KEY_FILE to the private PEM key}
+        target: /etc/nginx/tls/privkey.pem
+        read_only: true
+        bind:
+          create_host_path: false

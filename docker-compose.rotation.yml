@@ -1,0 +1,17 @@
+# Optional overlap window during planned RSA rotation. Never use after a key compromise.
+services:
+  identity-api:
+    environment:
+      Jwt__PreviousPublicKeyFile: /run/secrets/jwt_previous_public
+    secrets: [jwt_previous_public]
+  vehicles-api:
+    environment:
+      Jwt__PreviousPublicKeyFile: /run/secrets/jwt_previous_public
+    secrets: [jwt_previous_public]
+  maintenance-api:
+    environment:
+      Jwt__PreviousPublicKeyFile: /run/secrets/jwt_previous_public
+    secrets: [jwt_previous_public]
+secrets:
+  jwt_previous_public:
+    file: ${PREVIOUS_JWT_PUBLIC_KEY_FILE:?Set PREVIOUS_JWT_PUBLIC_KEY_FILE to the previous public PEM}

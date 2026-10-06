@@ -1,0 +1,92 @@
+<section>
+  <h1 class="text-2xl font-bold">Consumo</h1>
+  <p class="mt-1 text-gray-600">
+    Informe as quilometragens antes e depois para calcular o consumo.
+  </p>
+  <app-alert
+    *ngIf="hasPendingCalculation"
+    class="mt-5 block"
+    type="warning"
+    title="Cálculo pendente"
+  >
+    A quilometragem antes do abastecimento foi salva. Retorne a esta tela depois do abastecimento
+    para informar a nova quilometragem e concluir o cálculo.
+  </app-alert>
+  <app-alert *ngIf="result" class="mt-5 block" type="success" title="Abastecimento registrado">
+    Consumo calculado:
+    <strong>{{ result.kmPerLiter | number: '1.1-2' }} km/l</strong>
+    .
+  </app-alert>
+  <app-alert *ngIf="errorMessage" class="mt-4 block" type="error" title="Erro">
+    {{ errorMessage }}
+  </app-alert>
+  <form
+    [formGroup]="form"
+    (ngSubmit)="save()"
+    class="mt-5 max-w-2xl rounded-xl bg-white p-5 shadow-sm"
+  >
+    <div class="grid gap-4 sm:grid-cols-2">
+      <app-input
+        label="Data do abastecimento"
+        inputType="date"
+        [required]="true"
+        formControlName="fueledOn"
+      />
+      <label class="block text-sm font-medium">
+        Valor abastecido (R$) *
+        <input
+          type="number"
+          min="0.01"
+          max="999999999.99"
+          step="0.01"
+          required
+          formControlName="totalCost"
+          class="mt-1 block w-full rounded-lg border border-gray-400 p-2.5"
+        />
+      </label>
+      <label class="block">
+        <span class="mb-1.5 block text-sm font-medium">Veículo *</span>
+        <select
+          formControlName="vehicleId"
+          class="min-h-11 w-full rounded-lg border border-gray-400 bg-white p-2.5 focus:border-brand focus:ring-brand"
+        >
+          <option value="">Selecione</option>
+          <option *ngFor="let v of vehicles" [value]="v.id">
+            {{ v.model }} — {{ v.odometerKm | number }} km
+          </option>
+        </select>
+      </label>
+      <app-input
+        label="Quilometragem antes de abastecer"
+        inputType="number"
+        [required]="true"
+        formControlName="previousOdometerKm"
+      />
+      <app-input
+        label="Quilometragem depois de abastecer"
+        inputType="number"
+        [required]="true"
+        formControlName="odometerKm"
+      />
+      <app-input
+        label="Litros abastecidos"
+        inputType="number"
+        [required]="true"
+        formControlName="liters"
+        hint="Informe o total indicado na bomba"
+      />
+    </div>
+    <p
+      *ngIf="form.hasError('odometerRange') && form.controls.odometerKm.touched"
+      class="mt-3 text-sm text-red-700"
+      role="alert"
+    >
+      A quilometragem depois de abastecer deve ser maior que a quilometragem anterior.
+    </p>
+    <div class="mt-5">
+      <app-button buttonType="submit" [disabled]="saving">
+        {{ saving ? 'Salvando...' : 'Registrar abastecimento' }}
+      </app-button>
+    </div>
+  </form>
+</section>

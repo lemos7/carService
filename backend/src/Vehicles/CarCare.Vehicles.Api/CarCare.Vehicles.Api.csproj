@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../CarCare.Vehicles.Application/CarCare.Vehicles.Application.csproj" />
+    <ProjectReference Include="../CarCare.Vehicles.Persistence/CarCare.Vehicles.Persistence.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,71 @@
+services:
+  identity-api:
+    build: { context: ./backend, dockerfile: Dockerfile.identity }
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Database: Data Source=/app/data/identity.db
+      ASPNETCORE_ENVIRONMENT: Production
+      Jwt__PrivateKeyFile: /run/secrets/jwt_private
+      Jwt__PublicKeyFile: /run/secrets/jwt_public
+      FrontendUrl: ${FRONTEND_URL:-}
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__PasswordFile: /run/secrets/smtp_password
+      Smtp__From: ${SMTP_FROM:-}
+    secrets: [jwt_private, jwt_public, smtp_password]
+    volumes: [identity-data:/app/data]
+    networks: [backend, outbound]
+  maintenance-api:
+    build: { context: ./backend, dockerfile: Dockerfile.maintenance }
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Database: Data Source=/app/data/maintenance.db
+      ASPNETCORE_ENVIRONMENT: Production
+      FrontendUrl: ${FRONTEND_URL:-}
+      Jwt__PublicKeyFile: /run/secrets/jwt_public
+      InternalApiKeyFile: /run/secrets/internal_api_key
+      Services__Vehicles: http://vehicles-api:8080
+    volumes: [maintenance-data:/app/data, maintenance-documents:/app/documents]
+    secrets: [jwt_public, internal_api_key]
+    networks: [backend]
+  vehicles-api:
+    build: { context: ./backend, dockerfile: Dockerfile.vehicles }
+    depends_on: [maintenance-api]
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Database: Data Source=/app/data/vehicles.db
+      ASPNETCORE_ENVIRONMENT: Production
+      FrontendUrl: ${FRONTEND_URL:-}
+      Jwt__PublicKeyFile: /run/secrets/jwt_public
+      Services__Maintenance: http://maintenance-api:8080
+      InternalApiKeyFile: /run/secrets/internal_api_key
+    volumes: [vehicles-data:/app/data, vehicle-uploads:/app/wwwroot/uploads]
+    secrets: [jwt_public, internal_api_key]
+    networks: [backend]
+  web:
+    build: ./frontend
+    depends_on: [identity-api, vehicles-api, maintenance-api]
+    networks: [backend, outbound]
+    security_opt: [no-new-privileges:true]
+networks:
+  backend:
+    internal: true
+  outbound: {}
+secrets:
+  jwt_private:
+    file: ${SECRETS_DIR:-./secrets}/jwt-private.pem
+  jwt_public:
+    file: ${SECRETS_DIR:-./secrets}/jwt-public.pem
+  internal_api_key:
+    file: ${SECRETS_DIR:-./secrets}/internal-api-key
+  smtp_password:
+    file: ${SECRETS_DIR:-./secrets}/smtp-password
+volumes:
+  {
+    identity-data: {},
+    vehicles-data: {},
+    maintenance-data: {},
+    vehicle-uploads: {},
+    maintenance-documents: {},
+  }

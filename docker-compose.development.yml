@@ -1,0 +1,16 @@
+# Local-only entry point. APIs remain private behind the web proxy.
+services:
+  identity-api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      FrontendUrl: http://localhost:4200
+  vehicles-api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      FrontendUrl: http://localhost:4200
+  maintenance-api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      FrontendUrl: http://localhost:4200
+  web:
+    ports: ["127.0.0.1:4200:80"]

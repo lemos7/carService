@@ -1,0 +1,56 @@
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 600;
+}
+.profile-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  margin: 1rem 0;
+  padding: 1.25rem;
+  background: white;
+  border-radius: 0.75rem;
+}
+.profile-header img {
+  width: 160px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.profile-header p {
+  color: #4b5563;
+  margin-top: 0.4rem;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+.actions a {
+  padding: 0.75rem;
+  border: 1px solid #9ca3af;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  background: white;
+}
+.charts {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+.charts > * {
+  min-width: 0;
+}
+@media (min-width: 1200px) {
+  .charts {
+    grid-template-columns: 1fr 1fr;
+  }
+}

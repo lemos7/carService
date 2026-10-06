@@ -1,0 +1,88 @@
+<section>
+  <button
+    type="button"
+    (click)="goBack()"
+    class="back-link"
+    aria-label="Voltar para a página anterior"
+  >
+    <span aria-hidden="true">←</span>
+    Voltar
+  </button>
+
+  <div class="mt-4">
+    <h1 class="text-2xl font-bold">Criar alerta de manutenção</h1>
+    <p class="mt-1 text-gray-600">Defina quando você deseja ser avisado sobre o próximo serviço.</p>
+  </div>
+
+  <app-alert
+    *ngIf="message"
+    class="mt-4 block"
+    [type]="error ? 'error' : 'success'"
+    [title]="error ? 'Erro' : 'Concluído'"
+  >
+    {{ message }}
+  </app-alert>
+
+  <form [formGroup]="form" (ngSubmit)="save()" class="mt-5 rounded-xl bg-white p-5 shadow-sm">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block">
+        <span class="mb-1.5 block text-sm font-medium">Veículo *</span>
+        <select
+          formControlName="vehicleId"
+          class="min-h-11 w-full rounded-lg border border-gray-400 bg-white p-2.5 focus:border-brand focus:ring-brand disabled:bg-gray-100"
+        >
+          <option value="">Selecione</option>
+          <option *ngFor="let vehicle of vehicles" [value]="vehicle.id">
+            {{ vehicle.model }} — {{ vehicle.licensePlate }}
+          </option>
+        </select>
+      </label>
+
+      <app-input
+        label="Serviço"
+        placeholder="Ex.: Troca de óleo"
+        [required]="true"
+        formControlName="title"
+      />
+      <app-input
+        label="Quilometragem prevista"
+        inputType="number"
+        [required]="true"
+        formControlName="dueKm"
+      />
+      <app-input
+        label="Avisar quantos km antes"
+        inputType="number"
+        [required]="true"
+        formControlName="warningKm"
+      />
+      <app-input
+        label="Repetir a cada (km)"
+        inputType="number"
+        hint="Opcional"
+        formControlName="repeatEveryKm"
+      />
+      <app-input label="Anotações" formControlName="notes" />
+    </div>
+
+    <div class="mt-5 flex flex-wrap gap-2">
+      <app-button *ngIf="!form.disabled" buttonType="submit" [disabled]="saving">
+        {{ saving ? 'Criando...' : 'Criar alerta' }}
+      </app-button>
+      <a
+        *ngIf="form.disabled"
+        routerLink="/manutencoes"
+        class="inline-flex min-h-11 items-center rounded-lg bg-brand px-4 py-2.5 font-semibold"
+      >
+        Ver alertas
+      </a>
+      <button
+        type="button"
+        (click)="goBack()"
+        class="rounded-lg px-4 py-2.5 font-semibold text-gray-700"
+      >
+        {{ form.disabled ? 'Voltar' : 'Cancelar' }}
+      </button>
+    </div>
+  </form>
+</section>

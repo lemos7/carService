@@ -1,0 +1,93 @@
+<section class="cost-card" aria-labelledby="maintenance-cost-title">
+  <h2 id="maintenance-cost-title">Custo de manutenção</h2>
+  <p>Total dos serviços realizados, por mês.</p>
+  <div class="period">
+    <label>
+      Mês inicial
+      <input
+        type="month"
+        min="1900-01"
+        max="2199-12"
+        [ngModel]="start()"
+        (ngModelChange)="start.set($event)"
+      />
+    </label>
+    <label>
+      Mês final
+      <input
+        type="month"
+        min="1900-01"
+        max="2199-12"
+        [ngModel]="end()"
+        (ngModelChange)="end.set($event)"
+      />
+    </label>
+  </div>
+  <p *ngIf="!valid()" class="error" role="alert">
+    Selecione um período válido, com o mês final igual ou posterior ao inicial.
+  </p>
+  <ng-container *ngIf="valid()">
+    <p class="metric">{{ summary().total | currency: 'BRL' }}</p>
+    <p *ngIf="summary().omitted" class="notice">
+      {{ summary().omitted }} registro(s) sem data ou valor não entram no cálculo. Registros sem
+      data não podem ser atribuídos a um período.
+    </p>
+    <p *ngIf="!summary().count" class="empty">
+      Nenhum custo de manutenção informado neste período.
+    </p>
+    <ng-container *ngIf="summary().count">
+      <div class="chart-scroll">
+        <svg
+          [attr.viewBox]="'0 0 ' + (summary().rows.length * 100 + 40) + ' 240'"
+          [attr.width]="summary().rows.length * 100 + 40"
+          height="240"
+          role="img"
+          aria-label="Gráfico mensal de custos de manutenção em reais. Valores disponíveis na tabela abaixo."
+        >
+          <line x1="20" y1="195" [attr.x2]="summary().rows.length * 100 + 20" y2="195" />
+          <g *ngFor="let row of summary().rows; let i = index">
+            <rect
+              [attr.x]="i * 100 + 40"
+              [attr.y]="195 - (row.value / maximum()) * 150"
+              width="50"
+              [attr.height]="(row.value / maximum()) * 150"
+            >
+              <title>{{ row.month }}: {{ row.value | currency: 'BRL' }}</title>
+            </rect>
+            <text [attr.x]="i * 100 + 65" y="220">{{ row.month }}</text>
+          </g>
+        </svg>
+      </div>
+      <table>
+        <caption>Valores mensais</caption>
+        <thead>
+          <tr>
+            <th scope="col">Mês</th>
+            <th scope="col">Manutenção</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of summary().rows">
+            <th scope="row">{{ row.month }}</th>
+            <td>{{ row.value | currency: 'BRL' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>Gasto por categoria</h3>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Categoria</th>
+            <th scope="col">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of summary().categories">
+            <th scope="row">{{ row.category }}</th>
+            <td>{{ row.value | currency: 'BRL' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+  </ng-container>
+</section>

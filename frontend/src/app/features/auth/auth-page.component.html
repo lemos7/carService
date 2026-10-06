@@ -1,0 +1,68 @@
+<main class="flex min-h-screen items-center justify-center bg-gray-900 px-4 py-10">
+  <section
+    class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-8"
+    [attr.aria-labelledby]="'page-title'"
+  >
+    <div class="mb-7">
+      <p class="mb-1 font-semibold text-brand">Garagem em Dia</p>
+      <h1 id="page-title" class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+      <p class="mt-2 text-sm text-gray-600">{{ subtitle }}</p>
+    </div>
+    <app-alert
+      *ngIf="message"
+      [type]="messageType"
+      [title]="messageType === 'error' ? 'Não foi possível' : 'Tudo certo'"
+    >
+      {{ message }}
+    </app-alert>
+    <form class="mt-5 space-y-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <app-input
+        *ngIf="mode === 'register'"
+        label="Nome"
+        [required]="true"
+        formControlName="name"
+      />
+      <app-input
+        *ngIf="mode !== 'reset'"
+        label="E-mail"
+        inputType="email"
+        [required]="true"
+        formControlName="email"
+      />
+      <app-input
+        *ngIf="mode === 'login' || mode === 'register' || mode === 'reset'"
+        label="Senha"
+        inputType="password"
+        [required]="true"
+        hint="Use pelo menos 8 caracteres"
+        formControlName="password"
+      />
+      <app-button buttonType="submit" [disabled]="loading">
+        {{ loading ? 'Aguarde...' : buttonLabel }}
+      </app-button>
+    </form>
+    <div class="mt-6 space-y-2 text-sm">
+      <a
+        *ngIf="mode === 'login'"
+        routerLink="/recuperar-senha"
+        class="block font-medium text-gray-700 underline hover:text-gray-950"
+      >
+        Esqueci minha senha
+      </a>
+      <a
+        *ngIf="mode === 'login'"
+        routerLink="/cadastro"
+        class="block font-medium text-gray-700 underline hover:text-gray-950"
+      >
+        Criar uma conta
+      </a>
+      <a
+        *ngIf="mode !== 'login'"
+        routerLink="/login"
+        class="block font-medium text-gray-700 underline hover:text-gray-950"
+      >
+        Voltar ao login
+      </a>
+    </div>
+  </section>
+</main>

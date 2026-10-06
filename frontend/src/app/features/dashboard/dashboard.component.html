@@ -1,0 +1,27 @@
+<section>
+  <h1 class="text-2xl font-bold">Visão geral</h1>
+  <p class="mt-1 text-gray-600">Tudo o que precisa da sua atenção agora.</p>
+  <div class="mt-5 grid gap-4 sm:grid-cols-3">
+    <article class="rounded-xl bg-white p-5 shadow-sm">
+      <p class="text-sm text-gray-600">Veículos</p>
+      <p class="mt-2 text-3xl font-bold">{{ vehicles.length }}</p>
+    </article>
+    <article class="rounded-xl bg-white p-5 shadow-sm">
+      <p class="text-sm text-gray-600">Avisos ativos</p>
+      <p class="mt-2 text-3xl font-bold">{{ alerts.length }}</p>
+    </article>
+    <article class="rounded-xl bg-white p-5 shadow-sm">
+      <p class="text-sm text-gray-600">Quilometragem total</p>
+      <p class="mt-2 text-3xl font-bold">{{ totalKm | number: '1.0-0' }} km</p>
+    </article>
+  </div>
+  <h2 class="mt-8 text-lg font-bold">Central de avisos</h2>
+  <div class="mt-3 space-y-3">
+    <app-alert *ngFor="let alert of alerts" [type]="alert.severity" [title]="alert.title">
+      {{ alert.message }}
+    </app-alert>
+    <p *ngIf="!alerts.length" class="rounded-xl bg-white p-5 text-gray-600 shadow-sm">
+      Nenhum alerta no momento. Boa viagem!
+    </p>
+  </div>
+</section>
