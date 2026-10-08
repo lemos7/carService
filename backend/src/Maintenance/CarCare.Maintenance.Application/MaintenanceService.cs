@@ -80,7 +80,7 @@ public sealed class MaintenanceService(
         Guid userId,
         Guid vehicleId,
         int odometerKm,
-        string details,
+        string? details,
         string documentPath,
         string documentName,
         DateOnly serviceDate,
@@ -89,7 +89,7 @@ public sealed class MaintenanceService(
         CancellationToken ct
     )
     {
-        if (odometerKm < 0 || string.IsNullOrWhiteSpace(details) || details.Length > 4000)
+        if (odometerKm < 0 || details?.Length > 4000)
             throw new ArgumentException("Informe a quilometragem e os detalhes do serviço.");
 
         ServiceRecord.ValidateCosts(serviceDate, totalCost, category);

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text;
+using CarCare.Maintenance.Api;
 using CarCare.Maintenance.Application;
 using CarCare.Maintenance.Persistence;
 using CarCare.Security;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 SecurityConfiguration.LoadAndValidate(builder.Configuration, builder.Environment, identity: false);
@@ -14,6 +16,9 @@ builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
 builder.Services.AddMaintenancePersistence(builder.Configuration);
 builder.Services.AddScoped<MaintenanceService>();
+builder.Services.AddScoped<VehicleReportService>();
+builder.Services.AddSingleton<IVehicleReportRenderer, VehicleReportPdfRenderer>();
+QuestPDF.Settings.License = LicenseType.Community;
 var jwt = builder.Configuration.GetSection("Jwt");
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -43,6 +48,7 @@ app.UseExceptionHandler(handler =>
         context.Response.StatusCode =
             e is KeyNotFoundException ? 404
             : e is ArgumentException ? 400
+            : e is HttpRequestException ? 503
             : 500;
         await Results
             .Problem(
@@ -114,30 +120,35 @@ api.MapPost(
             CancellationToken ct
         ) =>
         {
-            if (input.Document.Length == 0 || input.Document.Length > 10_000_000)
-                return Results.BadRequest(new { message = "Envie um PDF de até 10 MB." });
+            var storedName = string.Empty;
+            string? fullPath = null;
+            if (input.Document is not null)
+            {
+                if (input.Document.Length == 0 || input.Document.Length > 10_000_000)
+                    return Results.BadRequest(new { message = "Envie um PDF de até 10 MB." });
 
-            var extension = Path.GetExtension(input.Document.FileName);
-            if (!extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
-                return Results.BadRequest(new { message = "O anexo deve ser um arquivo PDF." });
+                var extension = Path.GetExtension(input.Document.FileName);
+                if (!extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                    return Results.BadRequest(new { message = "O anexo deve ser um arquivo PDF." });
 
-            await using var source = input.Document.OpenReadStream();
-            var signature = new byte[5];
-            if (
-                await source.ReadAsync(signature, ct) != signature.Length
-                || Encoding.ASCII.GetString(signature) != "%PDF-"
-            )
-                return Results.BadRequest(
-                    new { message = "O arquivo enviado não é um PDF válido." }
-                );
-            source.Position = 0;
+                await using var source = input.Document.OpenReadStream();
+                var signature = new byte[5];
+                if (
+                    await source.ReadAsync(signature, ct) != signature.Length
+                    || Encoding.ASCII.GetString(signature) != "%PDF-"
+                )
+                    return Results.BadRequest(
+                        new { message = "O arquivo enviado não é um PDF válido." }
+                    );
+                source.Position = 0;
 
-            var directory = Path.Combine(env.ContentRootPath, "documents");
-            Directory.CreateDirectory(directory);
-            var storedName = $"{Guid.NewGuid():N}.pdf";
-            var fullPath = Path.Combine(directory, storedName);
-            await using (var destination = File.Create(fullPath))
-                await source.CopyToAsync(destination, ct);
+                var directory = Path.Combine(env.ContentRootPath, "documents");
+                Directory.CreateDirectory(directory);
+                storedName = $"{Guid.NewGuid():N}.pdf";
+                fullPath = Path.Combine(directory, storedName);
+                await using (var destination = File.Create(fullPath))
+                    await source.CopyToAsync(destination, ct);
+            }
 
             try
             {
@@ -147,7 +158,9 @@ api.MapPost(
                     input.OdometerKm,
                     input.Details,
                     storedName,
-                    Path.GetFileName(input.Document.FileName),
+                    input.Document is null
+                        ? string.Empty
+                        : Path.GetFileName(input.Document.FileName),
                     input.ServiceDate,
                     input.TotalCost
                         ?? throw new ArgumentException("Informe o valor total da manutenção."),
@@ -158,7 +171,8 @@ api.MapPost(
             }
             catch
             {
-                File.Delete(fullPath);
+                if (fullPath is not null)
+                    File.Delete(fullPath);
                 throw;
             }
         }
@@ -226,6 +240,32 @@ api.MapPost(
             )
         )
 );
+api.MapGet(
+    "/reports/vehicles/{vehicleId:guid}",
+    async (
+        Guid vehicleId,
+        DateOnly? startDate,
+        DateOnly? endDate,
+        ClaimsPrincipal user,
+        VehicleReportService reportService,
+        IVehicleReportRenderer renderer,
+        CancellationToken ct
+    ) =>
+    {
+        var report = await reportService.BuildAsync(
+            UserId(user),
+            vehicleId,
+            startDate,
+            endDate,
+            ct
+        );
+        var safePlate = new string(
+            report.Vehicle.LicensePlate.Where(char.IsLetterOrDigit).ToArray()
+        ).ToUpperInvariant();
+        var fileName = $"relatorio-{safePlate}-{DateTime.UtcNow:yyyy-MM-dd}.pdf";
+        return Results.File(renderer.Render(report), "application/pdf", fileName);
+    }
+);
 Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "data"));
 await using (var scope = app.Services.CreateAsyncScope())
 {
@@ -275,6 +315,6 @@ public sealed class ServiceRecordRequest
     public DateOnly ServiceDate { get; init; }
     public decimal? TotalCost { get; init; }
     public string Category { get; init; } = string.Empty;
-    public string Details { get; init; } = string.Empty;
-    public required IFormFile Document { get; init; }
+    public string? Details { get; init; }
+    public IFormFile? Document { get; init; }
 }

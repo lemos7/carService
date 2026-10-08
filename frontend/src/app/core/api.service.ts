@@ -36,7 +36,7 @@ export class ApiService {
     vehicleId: string,
     odometerKm: number,
     details: string,
-    document: File,
+    document: File | undefined,
     serviceDate: string,
     totalCost: number,
     category: string,
@@ -48,11 +48,21 @@ export class ApiService {
     body.append('serviceDate', serviceDate);
     body.append('totalCost', String(totalCost));
     body.append('category', category);
-    body.append('document', document);
+    if (document) body.append('document', document);
     return this.http.post<ServiceRecord>('/api/maintenance/history', body);
   }
   downloadServiceDocument(id: string) {
     return this.http.get(`/api/maintenance/history/document/${id}`, {
+      observe: 'response',
+      responseType: 'blob',
+    });
+  }
+  downloadVehicleReport(vehicleId: string, startDate?: string, endDate?: string) {
+    const params: Record<string, string> = {};
+    if (startDate) params['startDate'] = startDate;
+    if (endDate) params['endDate'] = endDate;
+    return this.http.get(`/api/maintenance/reports/vehicles/${vehicleId}`, {
+      params,
       observe: 'response',
       responseType: 'blob',
     });

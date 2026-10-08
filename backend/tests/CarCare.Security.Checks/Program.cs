@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 
 var passed = 0;
 await CostChecks.SchemaAsync();
+await ReportChecks.RunAsync();
 void Check(bool condition, string name)
 {
     if (!condition)

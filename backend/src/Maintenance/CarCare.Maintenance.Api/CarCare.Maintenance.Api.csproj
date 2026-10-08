@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
+    <PackageReference Include="QuestPDF" />
     <ProjectReference Include="../CarCare.Maintenance.Application/CarCare.Maintenance.Application.csproj" />
     <ProjectReference Include="../CarCare.Maintenance.Persistence/CarCare.Maintenance.Persistence.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />

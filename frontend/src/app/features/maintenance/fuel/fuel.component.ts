@@ -11,9 +11,9 @@ import {
 import { ApiService } from '../../../core/api.service';
 import { AuthService } from '../../../core/auth.service';
 import { FuelResult, Vehicle } from '../../../core/models';
-import { UiAlertComponent } from '../../../shared/ui/ui-alert.component';
-import { UiButtonComponent } from '../../../shared/ui/ui-button.component';
-import { UiInputComponent } from '../../../shared/ui/ui-input.component';
+import { UiAlertComponent } from '../../../shared/ui/ui-alert/ui-alert.component';
+import { UiButtonComponent } from '../../../shared/ui/ui-button/ui-button.component';
+import { UiInputComponent } from '../../../shared/ui/ui-input/ui-input.component';
 
 @Component({
   selector: 'app-fuel',

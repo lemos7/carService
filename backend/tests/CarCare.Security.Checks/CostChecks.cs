@@ -43,6 +43,28 @@ internal static class CostChecks
         );
         await db.FuelEntries.ToListAsync();
         Check(true, "upgraded fuel schema is readable");
+        var optionalRecord = new CarCare.Maintenance.Domain.ServiceRecord(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            1000,
+            null,
+            string.Empty,
+            string.Empty,
+            new DateOnly(2026, 1, 15),
+            1234.56m,
+            "Preventiva"
+        );
+        db.ServiceRecords.Add(optionalRecord);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        var saved = await db.ServiceRecords.SingleAsync(x => x.Id == optionalRecord.Id);
+        Check(
+            saved.Details == string.Empty
+                && saved.DocumentName == string.Empty
+                && saved.DocumentPath == string.Empty
+                && saved.TotalCost == 1234.56m,
+            "maintenance persists exact cost without details or invoice"
+        );
     }
 
     public static async Task ApiAsync(HttpClient http, string maintenance, Guid vehicleId)
@@ -165,6 +187,25 @@ internal static class CostChecks
                 && records[0].GetProperty("serviceDate").GetString() == "2026-01-15"
                 && records[0].GetProperty("category").GetString() == "Preventiva",
             "maintenance form saves date, total and category and history returns them"
+        );
+        using var report = await http.GetAsync(
+            maintenance + $"/api/maintenance/reports/vehicles/{vehicleId}"
+        );
+        report.EnsureSuccessStatusCode();
+        var reportBytes = await report.Content.ReadAsByteArrayAsync();
+        Check(
+            report.Content.Headers.ContentType?.MediaType == "application/pdf"
+                && System.Text.Encoding.ASCII.GetString(reportBytes, 0, 5) == "%PDF-"
+                && report.Content.Headers.ContentDisposition?.FileName is not null,
+            "authenticated vehicle report returns a named PDF"
+        );
+        using var invalidPeriod = await http.GetAsync(
+            maintenance
+                + $"/api/maintenance/reports/vehicles/{vehicleId}?startDate=2026-02-01&endDate=2026-01-01"
+        );
+        Check(
+            invalidPeriod.StatusCode == HttpStatusCode.BadRequest,
+            "vehicle report rejects an invalid period"
         );
         using var otherVehicle = await http.GetAsync(
             maintenance + $"/api/maintenance/fuel/{Guid.NewGuid()}"

@@ -29,6 +29,9 @@ public sealed class VehicleService(IVehicleRepository repository, IOdometerPubli
     public Task<IReadOnlyList<Vehicle>> ListAsync(Guid userId, CancellationToken ct) =>
         repository.ListAsync(userId, ct);
 
+    public Task<Vehicle?> GetAsync(Guid id, Guid userId, CancellationToken ct) =>
+        repository.GetAsync(id, userId, ct);
+
     public async Task<Vehicle> CreateAsync(Guid userId, VehicleInput input, CancellationToken ct)
     {
         var vehicle = new Vehicle(

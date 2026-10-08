@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../../core/api.service';
 import { ServiceRecord, Vehicle } from '../../../core/models';
-import { UiAlertComponent } from '../../../shared/ui/ui-alert.component';
+import { UiAlertComponent } from '../../../shared/ui/ui-alert/ui-alert.component';
 
 @Component({
   selector: 'app-vehicle-maintenance-list',

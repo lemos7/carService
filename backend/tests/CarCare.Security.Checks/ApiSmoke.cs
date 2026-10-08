@@ -165,6 +165,54 @@ internal static class ApiSmoke
             create.EnsureSuccessStatusCode();
             var vehicle = await create.Content.ReadFromJsonAsync<JsonElement>();
             var vehicleId = vehicle.GetProperty("id").GetGuid();
+            var userId = user.GetProperty("userId").GetGuid();
+
+            using (var internalVehicleRequest = new HttpRequestMessage(
+                HttpMethod.Get,
+                vehicles + $"/internal/vehicles/{vehicleId}?userId={userId}"
+            ))
+            {
+                internalVehicleRequest.Headers.Add("X-Internal-Key", internalKey);
+                using var internalVehicle = await http.SendAsync(internalVehicleRequest);
+                internalVehicle.EnsureSuccessStatusCode();
+                var internalData = await internalVehicle.Content.ReadFromJsonAsync<JsonElement>();
+                Assert(
+                    internalData.GetProperty("id").GetGuid() == vehicleId
+                        && internalData.GetProperty("model").GetString() == "Smoke",
+                    "internal vehicle report lookup returns the owner's vehicle"
+                );
+            }
+            using (var wrongOwnerRequest = new HttpRequestMessage(
+                HttpMethod.Get,
+                vehicles + $"/internal/vehicles/{vehicleId}?userId={Guid.NewGuid()}"
+            ))
+            {
+                wrongOwnerRequest.Headers.Add("X-Internal-Key", internalKey);
+                using var wrongOwner = await http.SendAsync(wrongOwnerRequest);
+                Assert(
+                    wrongOwner.StatusCode == HttpStatusCode.NotFound,
+                    "internal vehicle report lookup hides another user's vehicle"
+                );
+            }
+            using (var unknownVehicleRequest = new HttpRequestMessage(
+                HttpMethod.Get,
+                vehicles + $"/internal/vehicles/{Guid.NewGuid()}?userId={userId}"
+            ))
+            {
+                unknownVehicleRequest.Headers.Add("X-Internal-Key", internalKey);
+                using var unknownVehicle = await http.SendAsync(unknownVehicleRequest);
+                Assert(
+                    unknownVehicle.StatusCode == HttpStatusCode.NotFound,
+                    "internal vehicle report lookup returns 404 for unknown vehicle"
+                );
+            }
+            using var missingInternalKey = await http.GetAsync(
+                vehicles + $"/internal/vehicles/{vehicleId}?userId={userId}"
+            );
+            Assert(
+                missingInternalKey.StatusCode == HttpStatusCode.Unauthorized,
+                "internal vehicle report lookup rejects missing key"
+            );
             using var fuel = await http.PostAsJsonAsync(
                 maintenance + "/api/maintenance/fuel",
                 new
@@ -224,6 +272,13 @@ internal static class ApiSmoke
                         "cost history is not exposed to another user"
                     );
                 }
+                using var isolatedReport = await otherUser.GetAsync(
+                    maintenance + $"/api/maintenance/reports/vehicles/{vehicleId}"
+                );
+                Assert(
+                    isolatedReport.StatusCode == HttpStatusCode.NotFound,
+                    "vehicle report does not reveal another user's vehicle"
+                );
             }
             using var unauthorized = await http.PutAsJsonAsync(
                 vehicles + "/internal/odometer",

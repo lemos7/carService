@@ -6,5 +6,9 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Shared/CarCare.Security/CarCare.Security.csproj" />
     <ProjectReference Include="../../src/Maintenance/CarCare.Maintenance.Persistence/CarCare.Maintenance.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\Maintenance\CarCare.Maintenance.Api\CarCare.Maintenance.Api.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PdfPig" />
   </ItemGroup>
 </Project>
