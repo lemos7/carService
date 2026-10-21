@@ -3,10 +3,11 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/api.service';
+import { formatMaintenanceMoney, parseMaintenanceMoney } from '../maintenance-money';
 import { Vehicle } from '../../../core/models';
-import { UiAlertComponent } from '../../../shared/ui/ui-alert.component';
-import { UiButtonComponent } from '../../../shared/ui/ui-button.component';
-import { UiInputComponent } from '../../../shared/ui/ui-input.component';
+import { UiAlertComponent } from '../../../shared/ui/ui-alert/ui-alert.component';
+import { UiButtonComponent } from '../../../shared/ui/ui-button/ui-button.component';
+import { UiInputComponent } from '../../../shared/ui/ui-input/ui-input.component';
 
 @Component({
   selector: 'app-vehicle-maintenance-form',
@@ -33,13 +34,12 @@ export class VehicleMaintenanceFormComponent implements OnInit {
   form = new FormGroup({
     odometerKm: new FormControl(0, [Validators.required, Validators.min(0)]),
     serviceDate: new FormControl('', Validators.required),
-    totalCost: new FormControl<number | null>(null, [
+    totalCost: new FormControl('', [
       Validators.required,
-      Validators.min(0),
-      Validators.max(999999999.99),
+      (control) => (parseMaintenanceMoney(control.value ?? '') === null ? { money: true } : null),
     ]),
     category: new FormControl('', Validators.required),
-    details: new FormControl('', [Validators.required, Validators.maxLength(4000)]),
+    details: new FormControl('', [Validators.maxLength(4000)]),
   });
 
   constructor(
@@ -101,11 +101,16 @@ export class VehicleMaintenanceFormComponent implements OnInit {
     this.error = false;
   }
 
+  formatTotalCost() {
+    const control = this.form.controls.totalCost;
+    control.setValue(formatMaintenanceMoney(control.value ?? ''));
+  }
+
   save() {
-    if (this.form.invalid || !this.vehicle || !this.document) {
+    if (this.form.invalid || !this.vehicle) {
       this.form.markAllAsTouched();
       this.error = true;
-      this.message = 'Preencha os campos obrigatórios e anexe a nota fiscal em PDF.';
+      this.message = 'Preencha os campos obrigatórios.';
       return;
     }
 
@@ -115,10 +120,10 @@ export class VehicleMaintenanceFormComponent implements OnInit {
       .createServiceRecord(
         this.vehicle.id,
         Number(values.odometerKm),
-        values.details!,
+        values.details ?? '',
         this.document,
         values.serviceDate!,
-        Number(values.totalCost),
+        parseMaintenanceMoney(values.totalCost ?? '')!,
         values.category!,
       )
       .subscribe({

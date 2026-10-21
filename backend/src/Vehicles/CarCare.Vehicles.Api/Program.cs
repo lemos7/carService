@@ -76,6 +76,42 @@ app.MapPut(
         return Results.NoContent();
     }
 );
+app.MapGet(
+    "/internal/vehicles/{id:guid}",
+    async (
+        Guid id,
+        Guid userId,
+        HttpRequest request,
+        VehicleService service,
+        IConfiguration config,
+        CancellationToken ct
+    ) =>
+    {
+        if (
+            !SecurityConfiguration.ValidInternalKey(
+                request.Headers["X-Internal-Key"].ToString(),
+                config["InternalApiKey"]!
+            )
+        )
+            return Results.Unauthorized();
+
+        var vehicle = await service.GetAsync(id, userId, ct);
+        return vehicle is null
+            ? Results.NotFound()
+            : Results.Ok(
+                new VehicleReportData(
+                    vehicle.Id,
+                    vehicle.Year,
+                    vehicle.Model,
+                    vehicle.LicensePlate,
+                    vehicle.Color,
+                    vehicle.Engine,
+                    vehicle.OdometerKm,
+                    vehicle.PhotoPath
+                )
+            );
+    }
+);
 var api = app.MapGroup("/api/vehicles").RequireAuthorization();
 api.MapGet(
     "/",
@@ -148,3 +184,13 @@ static Guid UserId(ClaimsPrincipal user) =>
     );
 
 public sealed record OdometerUpdate(Guid UserId, Guid VehicleId, int OdometerKm);
+public sealed record VehicleReportData(
+    Guid Id,
+    int Year,
+    string Model,
+    string LicensePlate,
+    string Color,
+    string Engine,
+    int OdometerKm,
+    string? PhotoPath
+);

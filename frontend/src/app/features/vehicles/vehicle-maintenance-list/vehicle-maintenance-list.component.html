@@ -60,6 +60,7 @@
         </div>
         <button
           type="button"
+          *ngIf="record.documentName"
           (click)="downloadDocument(record)"
           class="min-h-11 shrink-0 rounded-lg border-2 border-brand px-4 py-2 text-sm font-semibold"
         >

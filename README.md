@@ -40,12 +40,7 @@ flowchart LR
 - Novas manutenções exigem data de realização, categoria e valor total dos serviços (zero é permitido para serviços sem custo). Abastecimentos exigem data e valor total pago positivo.
 - O custo por km considera somente combustível: soma dos valores abastecidos dividida pela soma das distâncias dos lançamentos selecionados. Consumo e preço por litro usam totais ponderados, evitando a média simples de médias arredondadas. O lançamento inteiro pertence ao mês da data informada.
 - Na inicialização, Maintenance atualiza automaticamente o SQLite existente, preservando os registros antigos. Data e custo desconhecidos permanecem nulos e são sinalizados nos gráficos; não são inferidos pela data de cadastro nem convertidos em gasto zero.
-
-- Perfil do veículo em `/veiculos/:vehicleId`, com componentes independentes para custo por km e custo de manutenção.
-- Filtros de mês inicial/final em cada gráfico, totais mensais e gastos de manutenção por categoria.
-- Novas manutenções exigem data de realização, categoria e valor total dos serviços (zero é permitido para serviços sem custo). Abastecimentos exigem data e valor total pago positivo.
-- O custo por km considera somente combustível: soma dos valores abastecidos dividida pela soma das distâncias dos lançamentos selecionados. Consumo e preço por litro usam totais ponderados, evitando a média simples de médias arredondadas. O lançamento inteiro pertence ao mês da data informada.
-- Na inicialização, Maintenance atualiza automaticamente o SQLite existente, preservando os registros antigos. Data e custo desconhecidos permanecem nulos e são sinalizados nos gráficos; não são inferidos pela data de cadastro nem convertidos em gasto zero.
+- Geração e download de relatório PDF completo pelo perfil do veículo, reunindo cadastro, foto, custos, consumo, abastecimentos, serviços realizados e lembretes de manutenção.
 
 - Cadastro e autenticação de usuários com sessão baseada em JWT.
 - Recuperação de senha por token temporário, de uso único, enviado por SMTP ou registrado no log em desenvolvimento.
@@ -59,6 +54,19 @@ flowchart LR
 - Registro de abastecimentos e cálculo de rendimento em km/l.
 - Rascunho local do formulário de abastecimento, separado por usuário.
 - Dashboard com total de veículos, quilometragem acumulada e alertas ativos.
+
+### Relatório PDF do veículo
+
+No perfil `/veiculos/:vehicleId`, a ação **Baixar relatório** solicita à API um PDF gerado sob demanda. O documento contém:
+
+- dados cadastrais, foto disponível e quilometragem atual;
+- totais de combustível, manutenção e custo geral;
+- distância percorrida, litros, consumo médio ponderado, preço médio por litro e custo de combustível por quilômetro;
+- gastos de manutenção agrupados por categoria;
+- históricos separados de abastecimentos, serviços realizados e lembretes, evitando contabilizar um lembrete concluído como serviço com custo;
+- indicação de registros legados preservados no histórico, mas omitidos dos cálculos por falta de data ou valor.
+
+O histórico completo é usado por padrão. A API também aceita `startDate` e `endDate` no formato `YYYY-MM-DD`; as duas datas devem ser informadas e o intervalo é inclusivo. O relatório é gerado em memória e não fica armazenado no servidor.
 
 ## Arquitetura
 
@@ -91,6 +99,7 @@ Os serviços trocam atualizações de hodômetro por endpoints internos protegid
 2. Essa publicação é tolerante a falhas: indisponibilidade temporária de `Maintenance` gera um warning no log sem desfazer a operação do veículo.
 3. Ao registrar um abastecimento ou serviço, `Maintenance` atualiza o hodômetro oficial em `Vehicles`.
 4. Depois da confirmação, `Maintenance` atualiza sua projeção local de quilometragem, usada no cálculo dos alertas.
+5. Para gerar um relatório, `Maintenance` consulta por uma rota interna os dados do veículo e valida `VehicleId` e `UserId` antes de montar o PDF.
 
 Essa estratégia reduz acoplamento de dados e demonstra dois comportamentos de consistência adequados a cada fluxo: sincronização best-effort na publicação e confirmação síncrona nas operações que dependem da validade do veículo.
 
@@ -131,6 +140,7 @@ Em desenvolvimento, o proxy do Angular distribui `/api/auth`, `/api/vehicles`, `
 - ASP.NET Core Identity `PasswordHasher`
 - SMTP para recuperação de senha
 - Health Checks e respostas padronizadas com Problem Details
+- QuestPDF para geração paginada dos relatórios de veículos
 
 ### Front-end
 
@@ -151,6 +161,7 @@ Em desenvolvimento, o proxy do Angular distribui `/api/auth`, `/api/vehicles`, `
 - CSharpier e Prettier para formatação consistente
 - `.editorconfig` compartilhado
 - Build Angular com hashing e limite de tamanho do bundle
+- OpenSpec para especificação, planejamento, implementação acompanhada e arquivamento de mudanças
 
 ## Estrutura do repositório
 
@@ -181,6 +192,10 @@ Em desenvolvimento, o proxy do Angular distribui `/api/auth`, `/api/vehicles`, `
 │   ├── nginx.conf
 │   ├── proxy.conf.json
 │   └── package.json
+├── openspec/
+│   ├── config.yaml                    # Schema e contexto do fluxo OpenSpec
+│   ├── specs/                         # Capacidades estáveis do sistema
+│   └── changes/                       # Propostas, designs, specs delta e tarefas
 ├── docker-compose.yml
 ├── .env.example
 └── .editorconfig
@@ -210,7 +225,10 @@ Os endpoints de veículos e manutenção exigem sessão autenticada por cookie J
 | `POST` | `/api/maintenance/history`               | Registra serviço e documento PDF             |
 | `GET`  | `/api/maintenance/history/document/{id}` | Baixa um documento autorizado                |
 | `POST` | `/api/maintenance/fuel`                  | Registra abastecimento e calcula km/l        |
+| `GET`  | `/api/maintenance/reports/vehicles/{id}` | Gera e baixa o relatório PDF do veículo      |
 | `GET`  | `/health`                                | Verifica a disponibilidade de cada API       |
+
+O endpoint do relatório aceita os parâmetros opcionais `startDate` e `endDate`. Veículos inexistentes e veículos de outro usuário retornam a mesma resposta `404`, evitando revelar a existência de dados alheios.
 
 ## Como executar
 
@@ -270,10 +288,8 @@ dotnet build backend/CarCare.sln
 Set-Location frontend
 npm install
 npm run build
+npm test
 npm run format:check
-
-# Cálculos dos gráficos: períodos, categorias, médias ponderadas e dados incompletos
-npm run test:costs
 
 # Cálculos dos gráficos: períodos, categorias, médias ponderadas e dados incompletos
 npm run test:costs
@@ -288,6 +304,38 @@ dotnet csharpier check .
 ```
 
 Há uma suíte executável de verificações de segurança e integração das APIs: `dotnet run --project backend/tests/CarCare.Security.Checks -- --api-smoke backend`, executada da raiz após o build. Ainda não existe cobertura automatizada completa das regras de negócio e da interface.
+
+## Desenvolvimento orientado por OpenSpec
+
+O projeto usa [OpenSpec](https://github.com/Fission-AI/OpenSpec) para registrar mudanças de comportamento antes da implementação. A configuração está em `openspec/config.yaml`; cada mudança ativa fica em `openspec/changes/<nome-da-mudanca>/` e normalmente contém:
+
+| Artefato                     | Finalidade                                                 |
+| ---------------------------- | ---------------------------------------------------------- |
+| `proposal.md`                | Explica o problema, o escopo e as capacidades afetadas     |
+| `specs/<capacidade>/spec.md` | Define requisitos observáveis e cenários verificáveis      |
+| `design.md`                  | Registra decisões técnicas, alternativas e riscos          |
+| `tasks.md`                   | Divide a implementação em tarefas rastreáveis por checkbox |
+
+Fluxo recomendado:
+
+```text
+explore → propose → apply → archive
+```
+
+1. **Explore:** investigar o problema e o código sem implementar.
+2. **Propose:** criar proposta, especificação, desenho e plano de tarefas.
+3. **Apply:** implementar e validar cada tarefa, atualizando seu estado.
+4. **Archive:** incorporar a especificação delta às capacidades principais e arquivar a mudança concluída.
+
+Com o CLI instalado, os comandos de inspeção mais úteis são:
+
+```powershell
+openspec list --json
+openspec status --change "nome-da-mudanca"
+openspec validate "nome-da-mudanca" --strict
+```
+
+A funcionalidade de relatório foi desenvolvida pela mudança `generate-vehicle-pdf-report`, incluindo contrato de comportamento, decisões técnicas, tarefas e verificações integradas pelo gateway.
 
 ## Configuração
 

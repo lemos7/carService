@@ -77,7 +77,7 @@ public sealed class ServiceRecord
         Guid userId,
         Guid vehicleId,
         int odometerKm,
-        string details,
+        string? details,
         string documentPath,
         string documentName,
         DateOnly serviceDate,
@@ -85,7 +85,7 @@ public sealed class ServiceRecord
         string category
     )
     {
-        if (odometerKm < 0 || string.IsNullOrWhiteSpace(details) || details.Length > 4000)
+        if (odometerKm < 0 || details?.Length > 4000)
             throw new ArgumentException("Dados do serviço realizado inválidos.");
 
         ValidateCosts(serviceDate, totalCost, category);
@@ -96,7 +96,7 @@ public sealed class ServiceRecord
         UserId = userId;
         VehicleId = vehicleId;
         OdometerKm = odometerKm;
-        Details = details.Trim();
+        Details = details?.Trim() ?? string.Empty;
         DocumentPath = documentPath;
         DocumentName = documentName;
         CreatedAtUtc = DateTime.UtcNow;

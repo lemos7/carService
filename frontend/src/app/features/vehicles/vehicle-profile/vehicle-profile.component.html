@@ -21,7 +21,11 @@
       <a [routerLink]="['/veiculos', vehicle.id, 'manutencoes', 'nova']">Registrar manutenção</a>
       <a [routerLink]="['/veiculos', vehicle.id, 'manutencoes']">Histórico de manutenções</a>
       <a routerLink="/consumo">Registrar abastecimento</a>
+      <button type="button" (click)="downloadReport()" [disabled]="reportState.downloading">
+        {{ reportState.downloading ? 'Gerando relatório...' : 'Baixar relatório' }}
+      </button>
     </nav>
+    <p *ngIf="reportState.error" role="alert" class="report-error">{{ reportState.error }}</p>
     <h2 class="text-xl font-bold">Controle de custos</h2>
     <div class="charts">
       <app-fuel-cost-chart [entries]="fuel" />

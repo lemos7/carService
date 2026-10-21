@@ -4,9 +4,9 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
-import { UiAlertComponent } from '../../shared/ui/ui-alert.component';
-import { UiButtonComponent } from '../../shared/ui/ui-button.component';
-import { UiInputComponent } from '../../shared/ui/ui-input.component';
+import { UiAlertComponent } from '../../shared/ui/ui-alert/ui-alert.component';
+import { UiButtonComponent } from '../../shared/ui/ui-button/ui-button.component';
+import { UiInputComponent } from '../../shared/ui/ui-input/ui-input.component';
 type Mode = 'login' | 'register' | 'forgot' | 'reset';
 @Component({
   selector: 'app-auth-page',

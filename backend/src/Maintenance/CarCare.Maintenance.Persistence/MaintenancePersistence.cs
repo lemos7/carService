@@ -53,7 +53,8 @@ public sealed class MaintenanceRepository(MaintenanceDbContext db) : IMaintenanc
         CancellationToken ct
     ) =>
         await db
-            .MaintenanceItems.Where(x =>
+            .MaintenanceItems.AsNoTracking()
+            .Where(x =>
                 x.UserId == userId && (!vehicleId.HasValue || x.VehicleId == vehicleId)
             )
             .OrderBy(x => x.CompletedAtUtc)
@@ -69,7 +70,8 @@ public sealed class MaintenanceRepository(MaintenanceDbContext db) : IMaintenanc
         CancellationToken ct
     ) =>
         await db
-            .ServiceRecords.Where(x => x.UserId == userId && x.VehicleId == vehicleId)
+            .ServiceRecords.AsNoTracking()
+            .Where(x => x.UserId == userId && x.VehicleId == vehicleId)
             .OrderByDescending(x => x.CreatedAtUtc)
             .ToListAsync(ct);
 
@@ -152,25 +154,88 @@ public sealed class VehicleOdometerUpdater(HttpClient client, string internalApi
     }
 }
 
+public sealed class VehicleReportClient(HttpClient client, string internalApiKey)
+    : IVehicleReportClient
+{
+    private sealed record VehicleData(
+        Guid Id,
+        int Year,
+        string Model,
+        string LicensePlate,
+        string Color,
+        string Engine,
+        int OdometerKm,
+        string? PhotoPath
+    );
+
+    public async Task<VehicleReportVehicle?> GetAsync(
+        Guid userId,
+        Guid vehicleId,
+        CancellationToken ct
+    )
+    {
+        var path = $"/internal/vehicles/{vehicleId}?userId={userId}";
+        using var request = new HttpRequestMessage(HttpMethod.Get, path);
+        request.Headers.Add("X-Internal-Key", internalApiKey);
+        using var response = await client.SendAsync(request, ct);
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return null;
+        response.EnsureSuccessStatusCode();
+        var vehicle =
+            await response.Content.ReadFromJsonAsync<VehicleData>(cancellationToken: ct)
+            ?? throw new HttpRequestException("Resposta inválida da API de veículos.");
+
+        byte[]? photo = null;
+        if (!string.IsNullOrWhiteSpace(vehicle.PhotoPath))
+        {
+            try
+            {
+                using var photoResponse = await client.GetAsync(vehicle.PhotoPath, ct);
+                if (
+                    photoResponse.IsSuccessStatusCode
+                    && photoResponse.Content.Headers.ContentLength is null or <= 5_000_000
+                )
+                    photo = await photoResponse.Content.ReadAsByteArrayAsync(ct);
+            }
+            catch (HttpRequestException) { }
+        }
+
+        return new(
+            vehicle.Id,
+            vehicle.Year,
+            vehicle.Model,
+            vehicle.LicensePlate,
+            vehicle.Color,
+            vehicle.Engine,
+            vehicle.OdometerKm,
+            photo
+        );
+    }
+}
+
 public static class DependencyInjection
 {
     public static IServiceCollection AddMaintenancePersistence(
         this IServiceCollection services,
         IConfiguration config
-    ) =>
-        services
+    )
+    {
+        var vehiclesUrl = config["Services:Vehicles"] ?? "http://vehicles-api:8080";
+        var internalApiKey =
+            config["InternalApiKey"]
+            ?? throw new InvalidOperationException("InternalApiKey is required.");
+        return services
             .AddDbContext<MaintenanceDbContext>(o =>
                 o.UseSqlite(config.GetConnectionString("Database"))
             )
             .AddScoped<IMaintenanceRepository, MaintenanceRepository>()
             .AddScoped<IVehicleOdometerUpdater>(_ => new VehicleOdometerUpdater(
-                new HttpClient
-                {
-                    BaseAddress = new Uri(
-                        config["Services:Vehicles"] ?? "http://vehicles-api:8080"
-                    ),
-                },
-                config["InternalApiKey"]
-                    ?? throw new InvalidOperationException("InternalApiKey is required.")
+                new HttpClient { BaseAddress = new Uri(vehiclesUrl) },
+                internalApiKey
+            ))
+            .AddScoped<IVehicleReportClient>(_ => new VehicleReportClient(
+                new HttpClient { BaseAddress = new Uri(vehiclesUrl) },
+                internalApiKey
             ));
+    }
 }

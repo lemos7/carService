@@ -5,7 +5,7 @@
   "scripts": {
     "start": "ng serve --host 0.0.0.0",
     "build": "ng build",
-    "test": "ng test --watch=false",
+    "test": "node --test tests/*.test.cjs",
     "test:costs": "node --test tests/cost-analytics.test.cjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
 import { ApiService } from '../../../core/api.service';
 import { FuelResult, ServiceRecord, Vehicle } from '../../../core/models';
 import { FuelCostChartComponent } from '../fuel-cost-chart/fuel-cost-chart.component';
 import { MaintenanceCostChartComponent } from '../maintenance-cost-chart/maintenance-cost-chart.component';
+import { downloadVehicleReport, ReportDownloadState } from '../report-download';
 
 @Component({
   selector: 'app-vehicle-profile',
@@ -20,6 +21,7 @@ export class VehicleProfileComponent implements OnInit {
   fuel: FuelResult[] = [];
   loading = true;
   error = '';
+  reportState: ReportDownloadState = { downloading: false, error: '' };
   constructor(
     private api: ApiService,
     private route: ActivatedRoute,
@@ -48,5 +50,13 @@ export class VehicleProfileComponent implements OnInit {
         this.error = 'Não foi possível carregar o perfil e os custos.';
       },
     });
+  }
+
+  async downloadReport() {
+    if (!this.vehicle) return;
+    await downloadVehicleReport(
+      () => firstValueFrom(this.api.downloadVehicleReport(this.vehicle!.id)),
+      this.reportState,
+    );
   }
 }
