@@ -1,9 +1,11 @@
-<label class="block">
+<div class="block">
   <span class="mb-1.5 block text-sm font-medium text-gray-800">
-    {{ label() }}
+    <label [attr.for]="inputId">{{ label() }}</label>
     <span *ngIf="required()" aria-hidden="true">*</span>
   </span>
   <input
+    [id]="inputId"
+    [attr.aria-describedby]="hint() ? inputId + '-hint' : null"
     [attr.type]="inputType()"
     [attr.placeholder]="placeholder()"
     [attr.required]="required()"
@@ -12,5 +14,5 @@
     (blur)="touched()"
     class="block min-h-11 w-full rounded-lg border border-gray-400 bg-white p-2.5 text-gray-900 focus:border-brand focus:ring-brand"
   />
-  <span *ngIf="hint()" class="mt-1 block text-xs text-gray-600">{{ hint() }}</span>
-</label>
+  <span *ngIf="hint()" [id]="inputId + '-hint'" class="mt-1 block text-xs text-gray-600">{{ hint() }}</span>
+</div>

@@ -12,6 +12,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
   imports: [CommonModule],
 })
 export class UiInputComponent implements ControlValueAccessor {
+  private static nextId = 0;
+  readonly inputId = `ui-input-${UiInputComponent.nextId++}`;
   label = input.required<string>();
   inputType = input('text');
   placeholder = input('');

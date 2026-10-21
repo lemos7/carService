@@ -1,0 +1,26 @@
+import { test, expect, date, month } from './fixtures';
+test('valida hodômetro e calcula consumo e custo por km', async ({ page, context, vehicle }) => {
+  await page.goto('/consumo');
+  await page.getByLabel('Veículo').selectOption(vehicle.id);
+  await page.getByLabel('Data do abastecimento').fill(date);
+  await page.getByLabel('Valor abastecido').fill('300');
+  await page.getByLabel('Quilometragem depois de abastecer').fill('10000');
+  await page.getByLabel('Litros abastecidos').fill('50');
+  await page.getByRole('button', { name: 'Registrar abastecimento' }).click();
+  await expect(page.getByText('A quilometragem depois de abastecer deve ser maior que a quilometragem anterior.')).toBeVisible();
+  const before = await context.request.get(`/api/maintenance/fuel/${vehicle.id}`);
+  expect(await before.json()).toEqual([]);
+  await page.getByLabel('Quilometragem depois de abastecer').fill('10500');
+  await page.getByRole('button', { name: 'Registrar abastecimento' }).click();
+  await expect(page.getByText('Abastecimento registrado', { exact: true })).toBeVisible();
+  await expect(page.getByText('10,0 km/l', { exact: true })).toBeVisible();
+  await page.goto(`/veiculos/${vehicle.id}`);
+  await page.reload();
+  await expect(page.locator('.profile-header')).toContainText('10.500 km');
+  const chart = page.getByRole('region', { name: 'Custo por km', exact: true });
+  await chart.getByLabel('Mês inicial').fill(month);
+  await chart.getByLabel('Mês final').fill(month);
+  await expect(chart).toContainText(/R\$\s*0,60\s*\/ km/);
+  await expect(chart).toContainText(/Média: 10,0 km\/l/);
+  await expect(chart.getByRole('row', { name: /2025-06/ })).toContainText('300,00');
+});

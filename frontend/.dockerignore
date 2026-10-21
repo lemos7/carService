@@ -1,6 +1,9 @@
 node_modules
 dist
 .angular
+playwright-report
+test-results
+playwright/.auth
 **/.env
 **/.env.*
 **/secrets

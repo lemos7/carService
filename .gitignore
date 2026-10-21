@@ -15,6 +15,9 @@ certs/
 **/*.pfx
 **/*.key
 artifacts/
+frontend/playwright-report/
+frontend/test-results/
+frontend/playwright/.auth/
 .vs/
 .vscode/
 *.db
