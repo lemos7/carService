@@ -1,0 +1,27 @@
+import { test, expect, date, month } from './fixtures';
+test('valida campos e registra serviço com custo persistido', async ({ page, context, vehicle }) => {
+  await page.goto(`/veiculos/${vehicle.id}/manutencoes/nova`);
+  await page.getByRole('button', { name: 'Salvar manutenção' }).click();
+  await expect(page.getByText('Preencha os campos obrigatórios.')).toBeVisible();
+  const before = await context.request.get(`/api/maintenance/history/${vehicle.id}`);
+  expect(await before.json()).toEqual([]);
+  await page.getByLabel('Data da manutenção').fill(date);
+  await page.getByLabel('Valor total dos serviços').fill('250,50');
+  await page.getByLabel('Categoria').selectOption('Preventiva');
+  await page.getByLabel('Quilometragem atual').fill('10100');
+  await page.getByLabel('Detalhes do serviço prestado').fill('Troca de filtros E2E');
+  await page.getByRole('button', { name: 'Salvar manutenção' }).click();
+  await expect(page.getByText('Manutenção registrada e quilometragem atualizada.')).toBeVisible();
+  await page.getByRole('link', { name: 'Ver histórico' }).click();
+  await page.reload();
+  const record = page.getByRole('article');
+  await expect(record).toContainText('Troca de filtros E2E');
+  await expect(record).toContainText('15/06/2025');
+  await expect(record).toContainText(/Preventiva.*250,50/);
+  await page.getByRole('link', { name: 'Perfil e custos' }).click();
+  const chart = page.getByRole('region', { name: 'Custo de manutenção', exact: true });
+  await chart.getByLabel('Mês inicial').fill(month);
+  await chart.getByLabel('Mês final').fill(month);
+  await expect(chart.getByRole('row', { name: /Preventiva/ })).toContainText('250,50');
+  await expect(page.locator('.profile-header')).toContainText('10.100 km');
+});

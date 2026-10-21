@@ -7,6 +7,10 @@
     "build": "ng build",
     "test": "node --test tests/*.test.cjs",
     "test:costs": "node --test tests/cost-analytics.test.cjs",
+    "test:e2e": "node scripts/e2e.mjs",
+    "test:e2e:ui": "node scripts/e2e.mjs --ui",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:cleanup": "node scripts/e2e.mjs cleanup",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -28,6 +32,7 @@
     "@angular-devkit/build-angular": "^20.3.0",
     "@angular/cli": "^20.3.0",
     "@angular/compiler-cli": "^20.3.0",
+    "@playwright/test": "^1.64.1",
     "@types/node": "^22.10.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.0",
