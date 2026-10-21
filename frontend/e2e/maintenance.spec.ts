@@ -13,6 +13,8 @@ test('valida campos e registra serviço com custo persistido', async ({ page, co
   await page.getByRole('button', { name: 'Salvar manutenção' }).click();
   await expect(page.getByText('Manutenção registrada e quilometragem atualizada.')).toBeVisible();
   await page.getByRole('link', { name: 'Ver histórico' }).click();
+  await expect(page).toHaveURL(new RegExp(`/veiculos/${vehicle.id}/manutencoes$`));
+  await expect(page.getByRole('article')).toContainText('Troca de filtros E2E');
   await page.reload();
   const record = page.getByRole('article');
   await expect(record).toContainText('Troca de filtros E2E');
