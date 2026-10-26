@@ -1,0 +1,27 @@
+# Development only. Explicitly opt in; independent from API secrets and services.
+services:
+  mobile:
+    profiles: [mobile]
+    build:
+      context: ./mobile
+    ports:
+      - "127.0.0.1:8081:8081"
+    environment:
+      EXPO_NO_TELEMETRY: "1"
+      REACT_NATIVE_PACKAGER_HOSTNAME: "127.0.0.1"
+    volumes:
+      - ./mobile:/app
+      - mobile-node-modules:/app/node_modules
+      - mobile-expo-cache:/app/.expo
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8081/status').then(async r => { if (!r.ok || !(await r.text()).includes('packager-status:running')) process.exit(1); }).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 120s
+      retries: 6
+
+volumes:
+  mobile-node-modules:
+  mobile-expo-cache:

@@ -1,0 +1,27 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  form: { backgroundColor: '#FFFFFF', padding: 20, gap: 24, borderRadius: 16, borderCurve: 'continuous', borderWidth: 1, borderColor: '#E4E7EB' },
+  field: { gap: 8 },
+  label: { fontSize: 14, fontWeight: '600', color: '#101827' },
+  input: { borderWidth: 1, borderColor: '#8A96A8', borderRadius: 8, borderCurve: 'continuous', minHeight: 48, paddingHorizontal: 12, paddingVertical: 12, color: '#101827', fontSize: 16 },
+  focused: { borderColor: '#966000', borderWidth: 2 },
+  invalid: { borderColor: '#B42318' },
+  multiline: { minHeight: 144, textAlignVertical: 'top' },
+  hint: { color: '#526176', fontSize: 13, lineHeight: 20 },
+  error: { color: '#B42318', fontSize: 14, lineHeight: 21 },
+  choices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  choice: { minHeight: 48, paddingHorizontal: 14, paddingVertical: 12, justifyContent: 'center', borderWidth: 1, borderColor: '#8A96A8', borderRadius: 8, borderCurve: 'continuous' },
+  selected: { borderColor: '#966000', backgroundColor: '#FFF2D9' },
+  button: { minHeight: 48, paddingHorizontal: 20, paddingVertical: 14, alignItems: 'center', justifyContent: 'center', borderRadius: 8, borderCurve: 'continuous', backgroundColor: '#EBAD4B' },
+  secondary: { backgroundColor: '#F1F3F5' },
+  buttonText: { color: '#101827', fontSize: 15, fontWeight: '600' },
+  pressed: { opacity: 0.7, transform: [{ scale: 0.98 }] },
+  disabled: { opacity: 0.5 },
+  actions: { gap: 12 },
+  record: { padding: 20, gap: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E4E7EB', borderRadius: 16, borderCurve: 'continuous' },
+  recordHeading: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 },
+  value: { color: '#101827', fontSize: 16, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  body: { color: '#445670', fontSize: 15, lineHeight: 23 },
+});
