@@ -32,13 +32,13 @@ export default function HomeScreen(): ReactElement {
       <SafeAreaView style={styles.body} edges={['bottom']}>
         <ScrollView style={styles.scrollArea} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
           <View style={styles.heading}>
-            <Text accessibilityRole="header" style={styles.title}>{section === 'Início' ? 'Visão geral' : section === 'Veículos' ? 'Meus veículos' : section}</Text>
-            <Text style={styles.subtitle}>{section === 'Início' ? 'Tudo o que precisa da sua atenção agora.'
+            <Text accessibilityRole="header" style={styles.title}>{section === 'Início' ? 'Meu carro em números' : section === 'Veículos' ? 'Meus veículos' : section}</Text>
+            <Text style={styles.subtitle}>{section === 'Início' ? 'Seus gastos e consumo, em um só lugar.'
               : section === 'Veículos' ? 'Todos os dados do seu carro em um só lugar.'
                 : section === 'Alertas' ? 'Fique em dia com os próximos cuidados.' : 'Acompanhe os abastecimentos do seu carro.'}</Text>
           </View>
           <ImportWarnings />
-          {section === 'Início' ? <Overview /> : section === 'Alertas' ? <Notice /> : section === 'Veículos' ? <VehicleList /> : <FuelSection />}
+          {section === 'Início' ? <Overview onFuel={(): void => setSection('Consumo')} /> : section === 'Alertas' ? <Notice /> : section === 'Veículos' ? <VehicleList /> : <FuelSection />}
           <Text style={styles.demo}>Demonstração · uma garagem local compartilhada.</Text>
         </ScrollView>
         <View style={styles.navigationContainer}>

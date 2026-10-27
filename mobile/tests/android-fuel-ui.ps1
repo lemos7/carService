@@ -7,12 +7,13 @@ Start-Sleep -Milliseconds 700
 $ui = Read-Ui
 $labels = $ui.SelectNodes('//node') | ForEach-Object { $_.'content-desc'; $_.text }
 if ($labels -notcontains 'Registrar abastecimento') { throw 'Formulário de consumo não foi aberto.' }
-Set-Field 'Data do abastecimento *' '01012026'
-Set-Field 'Valor abastecido (R$) *' '250,50'
+Tap-Node (Find-Label 'Selecionar veículo')
 $ui = Read-Ui
 $vehicle = $ui.SelectNodes('//node') | Where-Object { $_.'content-desc' -like '*Vectra*ABC1234*' } | Select-Object -First 1
 if (-not $vehicle) { throw 'Seletor de veículo ausente.' }
 Tap-Node $vehicle
+Set-Field 'Data do abastecimento *' '01012026'
+Set-Field 'Valor abastecido (R$) *' '250,50'
 adb shell input swipe 500 1800 500 800 400
 Start-Sleep -Milliseconds 500
 Set-Field 'Quilometragem inicial (km) *' '100000'
