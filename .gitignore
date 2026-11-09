@@ -3,6 +3,9 @@
 **/node_modules/
 **/dist/
 **/.angular/
+**/.expo/
+/mobile/android/
+/mobile/ios/
 **/data/
 **/wwwroot/uploads/
 .env

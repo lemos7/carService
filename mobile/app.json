@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Garagem em Dia",
+    "slug": "garagem-em-dia-mobile",
+    "version": "0.1.0",
+    "scheme": "garagememdia",
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.garagememdia.mobile"
+    },
+    "android": {
+      "package": "com.garagememdia.mobile"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite"
+    ]
+  }
+}

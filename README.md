@@ -1,6 +1,45 @@
 # Garagem em Dia
 
-Aplicação web full stack para centralizar os cuidados de veículos particulares: cadastro do carro, histórico de serviços, alertas de manutenção por quilometragem, documentos fiscais e cálculo de consumo de combustível.
+Aplicativo para centralizar os cuidados de veículos particulares: dados do carro, histórico de serviços, documentos fiscais, abastecimentos e acompanhamento de custos e consumo.
+
+O repositório contém duas aplicações com funcionamento independente:
+
+| Versão | Como funciona | Onde ficam os dados |
+| --- | --- | --- |
+| **Web — Angular + APIs .NET** | Contas autenticadas, cadastro de veículos, alertas calculados, gráficos e relatórios PDF. | Servidor, com dados separados por usuário. |
+| **Móvel — React Native + Expo** | Garagem demonstrativa com consulta de veículo, registro de manutenções e abastecimentos offline. Login/cadastro simulam o acesso; os alertas são ilustrativos. | SQLite e documentos no aparelho, em uma garagem compartilhada pelos acessos de demonstração. |
+
+**As versões não sincronizam dados entre si.** O aplicativo móvel não chama as APIs e não precisa do backend para operar. Consulte o [guia móvel](mobile/README.md) para detalhes de instalação, armazenamento e diagnóstico.
+
+## Como funciona no dia a dia
+
+Na versão web, crie uma conta, cadastre o veículo e informe o hodômetro. Registre os serviços realizados e os abastecimentos conforme utilizar o carro. Esses lançamentos alimentam o histórico e os indicadores; a quilometragem atual também determina quais lembretes estão próximos do vencimento ou vencidos. No perfil do veículo, consulte os gráficos por período e baixe o relatório PDF.
+
+No aplicativo móvel, entre pelo acesso demonstrativo e abra o veículo da garagem local. Registre manutenções pelo perfil e abastecimentos na aba **Consumo**. Os dados são gravados no aparelho e reaparecem ao abrir o aplicativo novamente. A aba **Alertas** mostra apenas um exemplo de troca de óleo, sem cálculo sobre os registros salvos.
+
+```mermaid
+flowchart TD
+    A[Garagem em Dia] --> W[Versão web]
+    A --> M[Aplicativo móvel]
+    W --> W1[Criar conta ou entrar]
+    W1 --> W2[Cadastrar veículo e hodômetro]
+    W2 --> W3[Registrar serviços e abastecimentos]
+    W2 --> W4[Agendar lembretes por quilometragem]
+    W3 --> W5[Histórico, custos e consumo]
+    W3 --> W6[Atualizar hodômetro]
+    W6 --> W7[Calcular alertas ativos]
+    W4 --> W7
+    W7 --> W8[Concluir lembrete]
+    W8 --> W9[Agendar próximo, se recorrente]
+    W5 --> W10[Consultar gráficos e baixar relatório PDF]
+    M --> M1[Acesso demonstrativo]
+    M1 --> M2[Consultar garagem local]
+    M2 --> M3[Registrar manutenção ou abastecimento]
+    M3 --> M4[(SQLite e anexos no aparelho)]
+    M4 --> M5[Histórico, hodômetro e consumo atualizados]
+```
+
+O diagrama mostra os dois percursos disponíveis. Na web, **lembretes** representam cuidados planejados; **serviços realizados** guardam data, categoria e custo. Concluir um lembrete encerra o alerta e pode gerar a próxima recorrência, mas não substitui o lançamento do serviço no histórico financeiro. No móvel, cada gravação confirma o lançamento e a atualização do hodômetro local na mesma transação.
 
 O projeto foi construído como um MVP mobile-first e, ao mesmo tempo, como demonstração de conhecimentos em arquitetura distribuída, modelagem de domínio, APIs protegidas, integração entre serviços, persistência de dados, formulários reativos e conteinerização.
 
@@ -8,7 +47,7 @@ Consulte [SECURITY.md](SECURITY.md) para o checklist de segurança, provisioname
 
 ## Visão geral
 
-O sistema é composto por uma SPA em Angular e três APIs independentes em ASP.NET Core. Cada serviço de back-end é responsável por um contexto de negócio, possui seu próprio banco SQLite e está dividido em camadas inspiradas em Clean Architecture.
+A versão web é composta por uma SPA em Angular e três APIs independentes em ASP.NET Core. Cada serviço de back-end é responsável por um contexto de negócio, possui seu próprio banco SQLite e está dividido em camadas inspiradas em Clean Architecture. O aplicativo móvel tem sua própria camada de serviços e persistência local.
 
 ```mermaid
 flowchart LR
@@ -35,6 +74,8 @@ flowchart LR
 
 ## Funcionalidades
 
+### Versão web
+
 - Perfil do veículo em `/veiculos/:vehicleId`, com componentes independentes para custo por km e custo de manutenção.
 - Filtros de mês inicial/final em cada gráfico, totais mensais e gastos de manutenção por categoria.
 - Novas manutenções exigem data de realização, categoria e valor total dos serviços (zero é permitido para serviços sem custo). Abastecimentos exigem data e valor total pago positivo.
@@ -55,6 +96,39 @@ flowchart LR
 - Rascunho local do formulário de abastecimento, separado por usuário.
 - Dashboard com total de veículos, quilometragem acumulada e alertas ativos.
 
+### Aplicativo móvel
+
+- **Acesso demonstrativo:** telas de login, cadastro, recuperação de senha e saída, com validação dos campos. Não criam contas reais, não enviam e-mails e não separam a garagem por pessoa; senhas não são persistidas.
+- **Navegação:** abas Início, Veículos, Alertas e Consumo, com feedback de carregamento, falha e nova tentativa.
+- **Visão geral:** quantidade de veículos e soma dos hodômetros a partir dos dados locais, além de um aviso explicitamente ilustrativo.
+- **Consulta de veículos:** listagem e perfil com modelo, ano, placa, cor, motor e quilometragem. A garagem começa com o veículo demonstrativo; ainda não há formulário móvel de cadastro/edição de veículos ou envio de foto.
+- **Registro de manutenção:** data de realização, custo (inclusive zero), categoria, quilometragem, detalhes opcionais e nota fiscal PDF opcional de até 10 MB. Categorias: Preventiva, Corretiva, Pneus, Óleo e filtros e Outros.
+- **Histórico por veículo:** serviços ordenados por data, com categoria, custo, quilometragem, detalhes e nome do anexo. Um anexo ausente é indicado como indisponível sem esconder o registro; a tela atual não oferece abertura/download do PDF.
+- **Abastecimentos:** veículo, data, valor pago, hodômetros inicial/final e litros; cálculo de distância e km/l por lançamento.
+- **Histórico de consumo:** totais de distância, litros e gastos, média ponderada de km/l, filtro quando há mais de um veículo e carregamento de mais itens em blocos de 20.
+- **Hodômetro consistente:** serviços e abastecimentos atualizam o maior valor conhecido; lançamentos históricos não reduzem a quilometragem atual.
+- **Persistência offline:** SQLite para veículos, serviços e abastecimentos; PDFs copiados para a pasta de documentos do aplicativo. Registros e anexos persistem após reiniciar o processo e limpar apenas o cache.
+- **Migração de dados:** evolução versionada do banco e importação do antigo cache de manutenções, com avisos, nova tentativa e proteção contra duplicação de registros.
+- **Recuperação de falhas:** gravações transacionais e novas tentativas com o mesmo identificador evitam duplicações; falhas de atualização da tela após salvar permitem repetir a leitura.
+- **Simulação para desenvolvimento:** atraso configurável e falha controlada por operação para exercitar estados de erro e recuperação.
+
+O móvel ainda não possui autenticação real, alertas calculados/recorrentes, gráficos de custos, relatório PDF, backup, exportação ou sincronização. Desinstalar ou limpar os **dados** do aplicativo pode apagar a garagem. O funcionamento offline do aplicativo instalado exige um build com o JavaScript embarcado; durante o desenvolvimento, o development client usa o Metro. Os resultados de validação nativa estão em [mobile/VALIDATION.md](mobile/VALIDATION.md).
+
+### Como os indicadores são calculados
+
+| Indicador | Cálculo | Disponibilidade |
+| --- | --- | --- |
+| Distância de um abastecimento | Hodômetro final − hodômetro inicial | Web e móvel |
+| Consumo do lançamento | Distância ÷ litros | Web e móvel |
+| Consumo médio | Soma das distâncias ÷ soma dos litros | Web e móvel |
+| Preço médio por litro | Soma dos valores pagos ÷ soma dos litros | Gráficos e relatório web |
+| Custo de combustível por km | Soma dos valores pagos ÷ soma das distâncias | Gráficos e relatório web |
+| Custo de manutenção | Soma dos serviços com data e custo válidos, por mês/categoria | Gráficos e relatório web |
+
+**Exemplo ilustrativo:** dois abastecimentos de 400 km/40 l/R$ 240 e 300 km/25 l/R$ 150 resultam em 700 km, 65 l e R$ 390. O consumo médio é **10,77 km/l**, o preço médio é **R$ 6,00/l** e o custo de combustível é **R$ 0,56/km**. As médias usam os totais, sem tirar a média simples dos rendimentos de cada abastecimento. O custo por km mostrado na web considera combustível; os gastos com manutenção são apresentados separadamente.
+
+Nos gráficos web, cada lançamento pertence ao mês da data informada e cada gráfico tem seu próprio intervalo. Registros antigos sem data ou custo ficam no histórico e são sinalizados como omitidos dos cálculos, sem transformar dados desconhecidos em zero.
+
 ### Relatório PDF do veículo
 
 No perfil `/veiculos/:vehicleId`, a ação **Baixar relatório** solicita à API um PDF gerado sob demanda. O documento contém:
@@ -69,6 +143,21 @@ No perfil `/veiculos/:vehicleId`, a ação **Baixar relatório** solicita à API
 O histórico completo é usado por padrão. A API também aceita `startDate` e `endDate` no formato `YYYY-MM-DD`; as duas datas devem ser informadas e o intervalo é inclusivo. O relatório é gerado em memória e não fica armazenado no servidor.
 
 ## Arquitetura
+
+### Aplicativo móvel: serviços e armazenamento local
+
+```mermaid
+flowchart LR
+    T[Telas Expo Router] --> C[Context e contratos de serviços]
+    C --> L[Adaptador local]
+    L --> R[Repositórios]
+    R --> DB[(garagem-em-dia.db)]
+    R --> PDF[Documentos PDF no aparelho]
+    B[DatabaseProvider] --> MIG[Migrações e importação do cache antigo]
+    MIG --> DB
+```
+
+O `DatabaseProvider` prepara o banco antes de liberar as operações. Os repositórios persistem os dados; o Context mantém o estado exibido pelas telas. Custos são armazenados em centavos, gravações são serializadas e anexos passam por uma cópia temporária antes da confirmação. Esse fluxo é inteiramente local, sem autenticação ou chamadas HTTP ao servidor.
 
 ### Back-end: serviços e camadas
 
@@ -162,6 +251,16 @@ Em desenvolvimento, o proxy do Angular distribui `/api/auth`, `/api/vehicles`, `
 - `.editorconfig` compartilhado
 - Build Angular com hashing e limite de tamanho do bundle
 - OpenSpec para especificação, planejamento, implementação acompanhada e arquivamento de mudanças
+- Playwright para testes de ponta a ponta da web, com workflow no GitHub Actions
+- Testes do armazenamento móvel com SQLite, além de scripts de verificação nativa Android
+
+### Aplicativo móvel
+
+- Expo 58, React Native 0.88 e React 19.3
+- Expo Router para navegação
+- Expo SQLite para persistência e migrações locais
+- Expo File System e Document Picker para anexos PDF
+- TypeScript 6 e Node.js 24, conforme `mobile/package.json`
 
 ## Estrutura do repositório
 
@@ -192,11 +291,19 @@ Em desenvolvimento, o proxy do Angular distribui `/api/auth`, `/api/vehicles`, `
 │   ├── nginx.conf
 │   ├── proxy.conf.json
 │   └── package.json
+├── mobile/                             # Aplicativo Expo independente
+│   ├── src/app/                        # Rotas e telas
+│   ├── src/components/                 # Interface por funcionalidade
+│   ├── src/services/                   # Contratos, adaptador local e simulação
+│   ├── src/data/                       # SQLite, migrações e anexos
+│   ├── tests/                          # Verificações locais e nativas
+│   └── README.md                       # Instalação e diagnóstico móvel
 ├── openspec/
 │   ├── config.yaml                    # Schema e contexto do fluxo OpenSpec
 │   ├── specs/                         # Capacidades estáveis do sistema
 │   └── changes/                       # Propostas, designs, specs delta e tarefas
 ├── docker-compose.yml
+├── docker-compose.mobile.yml           # Metro opcional em Docker
 ├── .env.example
 └── .editorconfig
 ```
@@ -225,12 +332,38 @@ Os endpoints de veículos e manutenção exigem sessão autenticada por cookie J
 | `POST` | `/api/maintenance/history`               | Registra serviço e documento PDF             |
 | `GET`  | `/api/maintenance/history/document/{id}` | Baixa um documento autorizado                |
 | `POST` | `/api/maintenance/fuel`                  | Registra abastecimento e calcula km/l        |
+| `GET`  | `/api/maintenance/fuel/{vehicleId}`      | Lista abastecimentos do veículo             |
 | `GET`  | `/api/maintenance/reports/vehicles/{id}` | Gera e baixa o relatório PDF do veículo      |
 | `GET`  | `/health`                                | Verifica a disponibilidade de cada API       |
 
 O endpoint do relatório aceita os parâmetros opcionais `startDate` e `endDate`. Veículos inexistentes e veículos de outro usuário retornam a mesma resposta `404`, evitando revelar a existência de dados alheios.
 
 ## Como executar
+
+### Aplicativo móvel sem backend
+
+Use Node.js 24 e um ambiente Android com JDK, SDK e emulador ou telefone configurados conforme o [guia móvel](mobile/README.md). A partir da raiz:
+
+```powershell
+Set-Location mobile
+npm ci
+npm run android:build
+adb reverse tcp:8081 tcp:8081
+npm start
+```
+
+Abra o development client instalado no dispositivo. Para iOS, execute `npm run ios` em um Mac com Xcode configurado. O Metro também pode rodar em Docker pelo comando `docker compose -f docker-compose.mobile.yml --profile mobile up --build mobile`, executado na raiz; o SDK e o emulador continuam no host.
+
+Para verificar o projeto móvel, dentro de `mobile/`:
+
+```powershell
+npm run typecheck
+npm run lint
+node --test tests/*.test.mjs
+npm run export
+```
+
+O último comando exporta bundles JavaScript para Android/iOS; não gera APK/IPA nem valida a execução em dispositivo.
 
 ### Pré-requisitos
 
@@ -305,6 +438,8 @@ dotnet csharpier check .
 
 Há uma suíte executável de verificações de segurança e integração das APIs: `dotnet run --project backend/tests/CarCare.Security.Checks -- --api-smoke backend`, executada da raiz após o build. Ainda não existe cobertura automatizada completa das regras de negócio e da interface.
 
+A web também possui testes E2E com Playwright. Em `frontend/`, instale o Chromium com `npx playwright install chromium` e execute `npm run test:e2e` com Docker e .NET disponíveis. O workflow [Playwright E2E](.github/workflows/playwright.yml) executa essa suíte em pushes e pull requests e publica os diagnósticos.
+
 ## Desenvolvimento orientado por OpenSpec
 
 O projeto usa [OpenSpec](https://github.com/Fission-AI/OpenSpec) para registrar mudanças de comportamento antes da implementação. A configuração está em `openspec/config.yaml`; cada mudança ativa fica em `openspec/changes/<nome-da-mudanca>/` e normalmente contém:
@@ -366,7 +501,7 @@ As connection strings e URLs internas já são fornecidas pelo `docker-compose.y
 
 - Testes unitários para entidades e serviços de aplicação.
 - Ampliar os testes de integração das APIs com bancos efêmeros para todas as regras de negócio.
-- Migrations do Entity Framework Core e pipeline de CI.
+- Migrations do Entity Framework Core e ampliação do pipeline de CI além dos testes E2E existentes.
 - OpenAPI/Swagger e versionamento de endpoints.
 - Mensageria para eventos entre os contextos.
 - Paginação e filtros no histórico de serviços e abastecimentos.

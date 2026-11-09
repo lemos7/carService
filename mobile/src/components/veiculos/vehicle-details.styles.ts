@@ -1,0 +1,26 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#F5F5F5' },
+  navigation: { backgroundColor: '#FFFFFF', paddingHorizontal: 16, borderBottomWidth: 1, borderColor: '#E4E7EB' },
+  back: { minHeight: 48, alignSelf: 'flex-start', justifyContent: 'center', paddingHorizontal: 4 },
+  backText: { color: '#101827', fontSize: 16, fontWeight: '600' },
+  pressed: { opacity: 0.7 },
+  content: { padding: 20, paddingBottom: 40, gap: 24, width: '100%', maxWidth: 760, alignSelf: 'center' },
+  heading: { gap: 8 },
+  eyebrow: { color: '#626B79', fontSize: 12, fontWeight: '600', letterSpacing: 1 },
+  title: { color: '#101827', fontSize: 30, fontWeight: '700' },
+  subtitle: { color: '#445670', fontSize: 15, lineHeight: 23 },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E4E7EB', overflow: 'hidden' },
+  cardContent: { padding: 20, gap: 20 },
+  photo: { minHeight: 160, backgroundColor: '#ECEEF1', alignItems: 'center', justifyContent: 'center' },
+  photoLabel: { color: '#687382', fontSize: 12 },
+  sectionTitle: { color: '#101827', fontSize: 20, fontWeight: '700' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 24 },
+  detail: { flexGrow: 1, flexBasis: '40%', minWidth: 110, gap: 6 },
+  label: { color: '#445670', fontSize: 13 },
+  value: { color: '#101827', fontSize: 16, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  section: { gap: 14 },
+  emptyTitle: { color: '#101827', fontSize: 16, fontWeight: '600' },
+  note: { color: '#626B79', fontSize: 13, lineHeight: 20 },
+});
